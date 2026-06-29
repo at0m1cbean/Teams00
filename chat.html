@@ -111,9 +111,9 @@ html, body {
 /* Bubble */
 .bubble {
   background: var(--bubble-other); color: var(--text);
-  border-radius: 14px; padding: 12px 14px 12px 11px;
-  font-size: 16px; line-height: 1.45;
-  border-left: 3px solid var(--bubble-other-border);
+  border-radius: 12px; padding: 10px 12px 10px 10px;
+  font-size: 15px; line-height: 1.4;
+  border-left: 2px solid var(--bubble-other-border);
   word-break: break-word; white-space: pre-wrap;
   cursor: pointer; transition: opacity 0.1s;
   outline: none;
@@ -121,9 +121,9 @@ html, body {
 .msg-row.mine .bubble {
   background: var(--bubble-mine);
   border-left: none;
-  border-radius: 20px;
-  padding: 11px 18px;
-  font-size: 16px;
+  border-radius: 18px;
+  padding: 10px 16px;
+  font-size: 15px;
 }
 .bubble:active { opacity: 0.8; }
 .bubble.open { box-shadow: 0 0 0 2px #5b5ea6; }
@@ -437,6 +437,13 @@ function sf(el) {
   if(m) m[el.dataset.f]=el.innerText.trim();
 }
 
+// ── PWA install ───────────────────────────────────────────────────────────────
+let deferredInstall = null;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredInstall = e;
+});
+
 // ── Add message ───────────────────────────────────────────────────────────────
 function onKey(e) {
   if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); toggleChooser(); }
@@ -444,7 +451,10 @@ function onKey(e) {
 }
 function toggleChooser() {
   const v=document.getElementById('msgIn').value.trim();
-  if(!v){ document.getElementById('msgIn').focus(); return; }
+  if(!v) {
+    if(deferredInstall) { deferredInstall.prompt(); return; }
+    document.getElementById('msgIn').focus(); return;
+  }
   document.getElementById('chooser').classList.toggle('on');
 }
 function addMsg(type) {

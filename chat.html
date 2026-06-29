@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Chat — Emily Bousfield</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  :root {
+    --teams-purple: #6264A7;
+    --teams-purple-dark: #4f5196;
+    --teams-purple-light: #e8e8f4;
+    --teams-bg: #f5f5f5;
+    --bubble-other: #ffffff;
+    --bubble-mine: #6264A7;
+    --text-dark: #242424;
+    --text-light: #ffffff;
+    --text-meta: #616161;
+    --system-text: #616161;
+    --divider-bg: #e0e0e0;
+    --header-h: 60px;
+    --input-h: 64px;
+  }
+
+  html, body {
+    height: 100%;
+    width: 100%;
+    background: #1a1a2e;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+
+  /* Phone shell */
+  .phone {
+    position: relative;
+    width: 390px;
+    height: 844px;
+    background: var(--teams-bg);
+    border-radius: 48px;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.6), inset 0 0 0 2px #333;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Notch */
+  .phone::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 126px; height: 34px;
+    background: #111;
+    border-radius: 0 0 20px 20px;
+    z-index: 100;
+  }
+
+  /* Status bar */
+  .status-bar {
+    background: var(--teams-purple);
+    height: 44px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    padding: 0 20px 6px;
+    flex-shrink: 0;
+    z-index: 10;
+  }
+  .status-bar .time { color: #fff; font-size: 15px; font-weight: 600; padding-left: 10px; }
+  .status-bar .icons { display: flex; align-items: center; gap: 6px; padding-right: 4px; }
+  .status-bar .icons svg { fill: #fff; }
+
+  /* Header */
+  .header {
+    background: var(--teams-purple);
+    height: var(--header-h);
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    gap: 12px;
+    flex-shrink: 0;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+    z-index: 9;
+  }
+  .header .back-btn { color: #fff; font-size: 20px; cursor: pointer; padding: 4px; }
+  .header .avatar-stack { display: flex; }
+  .header .avatar-stack .av {
+    width: 36px; height: 36px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700; color: #fff;
+    border: 2px solid var(--teams-purple);
+    margin-left: -8px;
+  }
+  .header .avatar-stack .av:first-child { margin-left: 0; }
+  .header .chat-info { flex: 1; }
+  .header .chat-name { color: #fff; font-size: 16px; font-weight: 600; line-height: 1.2; }
+  .header .chat-members { color: rgba(255,255,255,0.75); font-size: 12px; margin-top: 2px; }
+  .header .header-actions { display: flex; gap: 16px; }
+  .header .header-actions .icon { color: #fff; font-size: 20px; cursor: pointer; }
+
+  /* Edit mode banner */
+  .edit-banner {
+    background: #fef3cd;
+    border-bottom: 1px solid #fcd34d;
+    padding: 8px 16px;
+    font-size: 12px;
+    color: #92400e;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+    transition: all 0.2s;
+  }
+  .edit-banner.hidden { display: none; }
+  .edit-banner button {
+    background: #92400e;
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    padding: 3px 10px;
+    font-size: 11px;
+    cursor: pointer;
+  }
+
+  /* Messages area */
+  .messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px 0 8px;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
+  .messages::-webkit-scrollbar { width: 3px; }
+  .messages::-webkit-scrollbar-thumb { background: var(--teams-purple); border-radius: 2px; }
+
+  /* Date divider */
+  .date-divider {
+    display: flex;
+    align-items: center;
+    margin: 12px 16px;
+    gap: 10px;
+  }
+  .date-divider::before, .date-divider::after {
+    content: ''; flex: 1; height: 1px; background: var(--divider-bg);
+  }
+  .date-divider span {
+    font-size: 11px;
+    color: var(--text-meta);
+    background: var(--teams-bg);
+    padding: 2px 8px;
+    border-radius: 10px;
+    border: 1px solid var(--divider-bg);
+    white-space: nowrap;
+  }
+
+  /* System message */
+  .system-msg {
+    text-align: center;
+    margin: 6px 24px;
+    font-size: 11.5px;
+    color: var(--system-text);
+    line-height: 1.4;
+  }
+
+  /* Message row */
+  .msg-row {
+    display: flex;
+    padding: 2px 12px 2px;
+    gap: 8px;
+    align-items: flex-end;
+    position: relative;
+  }
+  .msg-row.mine { flex-direction: row-reverse; }
+
+  /* Avatar */
+  .msg-avatar {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff;
+    flex-shrink: 0;
+    align-self: flex-end;
+    margin-bottom: 2px;
+  }
+  .msg-row.mine .msg-avatar { display: none; }
+  .msg-row.no-avatar .msg-avatar { visibility: hidden; }
+
+  /* Bubble */
+  .bubble-wrap { max-width: 72%; display: flex; flex-direction: column; }
+  .msg-row.mine .bubble-wrap { align-items: flex-end; }
+
+  .sender-name {
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--teams-purple);
+    margin-bottom: 2px;
+    padding-left: 2px;
+  }
+  .msg-row.mine .sender-name { display: none; }
+
+  .bubble {
+    background: var(--bubble-other);
+    color: var(--text-dark);
+    border-radius: 18px 18px 18px 4px;
+    padding: 10px 14px;
+    font-size: 14.5px;
+    line-height: 1.45;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    word-break: break-word;
+    white-space: pre-wrap;
+    cursor: pointer;
+    transition: opacity 0.15s;
+    position: relative;
+    border: 1.5px solid transparent;
+  }
+  .msg-row.mine .bubble {
+    background: var(--bubble-mine);
+    color: var(--text-light);
+    border-radius: 18px 18px 4px 18px;
+    box-shadow: 0 1px 3px rgba(98,100,167,0.35);
+  }
+  .bubble:hover { opacity: 0.88; }
+  .bubble.editing {
+    border-color: var(--teams-purple);
+    opacity: 1;
+    box-shadow: 0 0 0 3px rgba(98,100,167,0.2);
+  }
+
+  .msg-time {
+    font-size: 10.5px;
+    color: var(--text-meta);
+    margin-top: 3px;
+    padding: 0 4px;
+  }
+  .msg-row.mine .msg-time { text-align: right; }
+
+  /* Inline editor */
+  .inline-editor {
+    display: none;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 4px;
+  }
+  .inline-editor.active { display: flex; }
+
+  .editor-fields { display: flex; flex-direction: column; gap: 4px; }
+
+  .editor-field {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: var(--text-meta);
+  }
+  .editor-field label { width: 48px; text-align: right; flex-shrink: 0; font-weight: 600; }
+  .editor-field input {
+    flex: 1;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 4px 8px;
+    font-size: 12px;
+    font-family: inherit;
+    outline: none;
+    background: #fff;
+  }
+  .editor-field input:focus { border-color: var(--teams-purple); }
+
+  .editor-textarea {
+    width: 100%;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    padding: 8px 10px;
+    font-size: 13.5px;
+    font-family: inherit;
+    resize: vertical;
+    min-height: 60px;
+    outline: none;
+    line-height: 1.4;
+    color: var(--text-dark);
+  }
+  .editor-textarea:focus { border-color: var(--teams-purple); }
+
+  .editor-btns {
+    display: flex;
+    gap: 6px;
+    justify-content: flex-end;
+  }
+  .editor-btns button {
+    padding: 5px 14px;
+    border-radius: 14px;
+    border: none;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .btn-save { background: var(--teams-purple); color: #fff; }
+  .btn-save:hover { background: var(--teams-purple-dark); }
+  .btn-cancel { background: #e0e0e0; color: #444; }
+  .btn-cancel:hover { background: #ccc; }
+  .btn-delete { background: #fee2e2; color: #b91c1c; }
+  .btn-delete:hover { background: #fca5a5; }
+
+  /* Input bar */
+  .input-bar {
+    background: #fff;
+    border-top: 1px solid #e5e5e5;
+    padding: 10px 12px;
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+    flex-shrink: 0;
+    min-height: var(--input-h);
+    padding-bottom: max(10px, env(safe-area-inset-bottom, 0px));
+  }
+  .input-bar .input-wrap {
+    flex: 1;
+    background: #f5f5f5;
+    border-radius: 22px;
+    padding: 8px 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid #e0e0e0;
+  }
+  .input-bar input[type=text] {
+    flex: 1;
+    border: none;
+    background: transparent;
+    outline: none;
+    font-size: 14px;
+    font-family: inherit;
+    color: var(--text-dark);
+  }
+  .input-bar input::placeholder { color: #aaa; }
+  .input-bar .send-btn {
+    width: 38px; height: 38px;
+    background: var(--teams-purple);
+    border: none; border-radius: 50%;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.15s;
+  }
+  .input-bar .send-btn:hover { background: var(--teams-purple-dark); }
+  .input-bar .send-btn svg { fill: #fff; width: 18px; height: 18px; }
+
+  /* Add message chooser */
+  .new-msg-who {
+    display: none;
+    position: absolute;
+    bottom: calc(var(--input-h) + 8px);
+    left: 12px; right: 12px;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    overflow: hidden;
+    z-index: 20;
+  }
+  .new-msg-who.active { display: block; }
+  .who-option {
+    padding: 14px 16px;
+    font-size: 14px;
+    cursor: pointer;
+    border-bottom: 1px solid #f0f0f0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .who-option:last-child { border-bottom: none; }
+  .who-option:hover { background: var(--teams-purple-light); }
+  .who-option .av-sm {
+    width: 28px; height: 28px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700; color: #fff;
+    flex-shrink: 0;
+  }
+
+  /* Tooltip for edit hint */
+  .edit-hint {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%; transform: translateX(-50%);
+    background: rgba(0,0,0,0.75);
+    color: #fff;
+    font-size: 11px;
+    padding: 4px 8px;
+    border-radius: 8px;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s;
+    z-index: 5;
+  }
+  .bubble:hover .edit-hint { opacity: 1; }
+
+  /* Home indicator */
+  .home-indicator {
+    position: absolute;
+    bottom: 8px; left: 50%;
+    transform: translateX(-50%);
+    width: 134px; height: 5px;
+    background: rgba(0,0,0,0.3);
+    border-radius: 3px;
+    z-index: 100;
+    pointer-events: none;
+  }
+
+  /* Responsive - on small screens fill the viewport */
+  @media (max-width: 430px) {
+    html, body { background: var(--teams-bg); align-items: stretch; }
+    .phone {
+      width: 100%; height: 100vh;
+      border-radius: 0;
+      box-shadow: none;
+    }
+    .phone::before { display: none; }
+    .home-indicator { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="phone">
+  <!-- Status bar -->
+  <div class="status-bar">
+    <span class="time">9:41</span>
+    <div class="icons">
+      <svg width="17" height="12" viewBox="0 0 17 12"><rect x="0" y="3" width="3" height="9" rx="1"/><rect x="4.5" y="2" width="3" height="10" rx="1"/><rect x="9" y="0" width="3" height="12" rx="1"/><rect x="13.5" y="0" width="3" height="12" rx="1" opacity=".35"/></svg>
+      <svg width="16" height="12" viewBox="0 0 16 12"><path d="M8 3.5C9.8 3.5 11.4 4.2 12.6 5.3L14 3.9C12.4 2.4 10.3 1.5 8 1.5S3.6 2.4 2 3.9L3.4 5.3C4.6 4.2 6.2 3.5 8 3.5zm0 3C9 6.5 9.9 6.9 10.6 7.5L12 6.1C10.9 5.2 9.5 4.5 8 4.5S5.1 5.2 4 6.1L5.4 7.5C6.1 6.9 7 6.5 8 6.5zm0 3c.6 0 1.1.2 1.5.6L8 10.5l-1.5-2.4C6.9 9.8 7.4 10 8 10z" opacity=".35"/></svg>
+      <svg width="25" height="12" viewBox="0 0 25 12"><rect x="0" y="1" width="22" height="10" rx="2" stroke="#fff" stroke-width="1" fill="none"/><rect x="1.5" y="2.5" width="16" height="7" rx="1" fill="#fff"/><rect x="23" y="4" width="2" height="4" rx="1" fill="#fff" opacity=".4"/></svg>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <div class="header">
+    <span class="back-btn">&#8249;</span>
+    <div class="avatar-stack">
+      <div class="av" style="background:#6264A7">MP</div>
+      <div class="av" style="background:#C43BAD">EB</div>
+      <div class="av" style="background:#E97548">AT</div>
+    </div>
+    <div class="chat-info">
+      <div class="chat-name">Michael, Emily + 5</div>
+      <div class="chat-members">8 members</div>
+    </div>
+    <div class="header-actions">
+      <span class="icon">&#9679;&#9679;&#9679;</span>
+    </div>
+  </div>
+
+  <!-- Edit mode banner -->
+  <div class="edit-banner hidden" id="editBanner">
+    ✏️ Tap any message to edit it &nbsp;·&nbsp; Long-press to delete
+    <button onclick="toggleEditMode()">Done</button>
+  </div>
+
+  <!-- Messages -->
+  <div class="messages" id="messages"></div>
+
+  <!-- New message sender chooser -->
+  <div class="new-msg-who" id="whoChooser">
+    <div class="who-option" onclick="addMessage('other')">
+      <div class="av-sm" style="background:#6264A7">MP</div>
+      <span>As <b>Michael Phillimore</b></span>
+    </div>
+    <div class="who-option" onclick="addMessage('mine')">
+      <div class="av-sm" style="background:#E97548">AT</div>
+      <span>As <b>Ali Taha (student)</b></span>
+    </div>
+  </div>
+
+  <!-- Input bar -->
+  <div class="input-bar">
+    <div class="input-wrap">
+      <input type="text" id="newMsgInput" placeholder="Type a message…" onkeydown="handleKey(event)">
+    </div>
+    <button class="send-btn" onclick="showWhoChooser()">
+      <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
+    </button>
+  </div>
+
+  <!-- Home indicator -->
+  <div class="home-indicator"></div>
+</div>
+
+<script>
+// ─── Message data ───────────────────────────────────────────────────────────
+const MESSAGES = [
+  { id: 1, type: 'system', text: 'Michael Phillimore added Emily Bousfield and 5 others to the chat.' },
+  { id: 2, type: 'date', text: 'Sunday, 21 June 2026' },
+  { id: 3, type: 'other', sender: 'Michael Phillimore', time: '10:44', text: 'Good Morning All, in case you were not aware - you have units (nearly universally Robots) to complete before you finish your access course.\n\nLessons will go ahead as normal tomorrow. I greatly suggest keeping things simple and then we should be able to have you all finished...well...tomorrow, but if not tomorrow by Tues. But the forecast for Tuesday is a firey inferno. I am afraid the shorts will be out. And if that doesn\'t scare you to do the work, Im not sure what will 😄 😉\n\nEnjoy your sunday!' },
+  { id: 4, type: 'date', text: 'Monday, 22 June 2026' },
+  { id: 5, type: 'other', sender: 'Michael Phillimore', time: '09:02', text: 'So I have Cylle.... where are the rest of you guys?' },
+  { id: 6, type: 'other', sender: 'Michael Phillimore', time: '09:12', text: 'Ali Taha (student), Fahmi Hussein (student), Daania Rizwan (student), Teisha Race-Kerr (student) - where are you?' },
+  { id: 7, type: 'mine', sender: 'Ali Taha (student)', time: '09:15', text: "Sorry sir I'll be there soon, my car had some issues" },
+  { id: 8, type: 'other', sender: 'Michael Phillimore', time: '09:30', text: 'We are in 113 until mid day.\n\nThis is astonishing that cyclle is the only one here, and other then Alis message, no comms from you. What is going on folks???' },
+  { id: 9, type: 'other', sender: 'Michael Phillimore', time: '12:53', text: 'we are now back in 106 🙂' },
+  { id: 10, type: 'date', text: 'Tuesday, 23 June 2026' },
+  { id: 11, type: 'system', text: 'Michael Phillimore removed Cylle Saringan (student) from the chat.' },
+  { id: 12, type: 'system', text: 'Michael Phillimore removed Fahmi Hussein (student) from the chat.' },
+  { id: 13, type: 'system', text: 'Michael Phillimore removed Teisha Race-Kerr (student) from the chat.' },
+  { id: 14, type: 'other', sender: 'Michael Phillimore', time: '08:41', text: "You two are now the only ones who have not passed. Daania Rizwan (student) you didn't even communicate with us yesterday, which is frankly just astonishing at this point of the year and given you have ONE unit left. Ali Taha (student) you were working but nothing has been handed in! We need to be seeing that tracking sheet go green....." },
+  { id: 15, type: 'other', sender: 'Michael Phillimore', time: '09:11', text: '9:10 and neither of you two are here. We could just fail both of you now and be done with it??' },
+  { id: 16, type: 'other', sender: 'Michael Phillimore', time: '09:12', text: 'we have an Ali!' },
+  { id: 17, type: 'date', text: 'Wednesday, 24 June 2026' },
+  { id: 18, type: 'system', text: 'Michael Phillimore removed Daania Rizwan (student) from the chat.' },
+  { id: 19, type: 'other', sender: 'Michael Phillimore', time: '09:20', text: 'Ali Taha (student) what progress have you made/work have you handed in please? You said you were close to a couple of things yesterday, are these now done?' },
+  { id: 20, type: 'date', text: 'Thursday, 25 June 2026' },
+  { id: 21, type: 'other', sender: 'Michael Phillimore', time: '08:23', text: "Ali Taha (student) - A DAY later with no reply, what is your status?? At this point you have 8 units to complete and 2 days left on site to do them - we need to see progress NOW. You can do it but you appear to be choosing not to do it. You basically have to be working on this full time every day between now and next Tuesday to be getting through.\n\nI will be honest if we don't see major progress today I am going to have to discuss your future on the course with Jon." },
+  { id: 22, type: 'other', sender: 'Michael Phillimore', time: '15:31', text: "Right Ali Taha (student) in lieu of complete lack of contact and work, I want you on site tomorrow at 9 - you will be in with my other Level 3s in IOT106.\n\nYou will also have a 5-day timetable next week where every day you are in at 9 in the morning until close of play.\n\nIf we cant see work being produced off site then you have left us little option." },
+  { id: 23, type: 'date', text: 'Sunday, 28 June 2026' },
+  { id: 24, type: 'other', sender: 'Michael Phillimore', time: '16:40', text: "Ali Taha (student) this is to confirm you've now passed the course. Well done.\n\nBut I greatly encourage you to find solutions so that you don't have this backlog in future, as there will come a point you won't be able to get it finished in time.\n\nEnjoy your summer!" },
+  { id: 25, type: 'mine', sender: 'Ali Taha (student)', time: '16:41', text: 'Thank you sir. Will do 👍' }
+];
+
+let nextId = 100;
+let editMode = false;
+let currentEdit = null;
+
+// ─── Avatar colours ──────────────────────────────────────────────────────────
+const AVATAR_COLORS = {
+  'Michael Phillimore': '#6264A7',
+  'Ali Taha (student)': '#E97548',
+  'Emily Bousfield': '#C43BAD',
+};
+function avatarColor(name) {
+  if (AVATAR_COLORS[name]) return AVATAR_COLORS[name];
+  let h = 0; for (let c of name) h = (h * 31 + c.charCodeAt(0)) & 0xffffff;
+  return '#' + (h & 0xFFFFFF).toString(16).padStart(6, '0');
+}
+function initials(name) {
+  return name.split(' ').filter(Boolean).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+}
+
+// ─── Render ─────────────────────────────────────────────────────────────────
+function render() {
+  const container = document.getElementById('messages');
+  container.innerHTML = '';
+
+  let prevSender = null;
+  let prevType = null;
+
+  MESSAGES.forEach((msg, i) => {
+    const next = MESSAGES[i + 1];
+
+    if (msg.type === 'date') {
+      const d = document.createElement('div');
+      d.className = 'date-divider';
+      d.innerHTML = `<span contenteditable="${editMode}" data-id="${msg.id}" data-field="text" onblur="saveField(this)">${msg.text}</span>`;
+      container.appendChild(d);
+      prevSender = null; prevType = null;
+      return;
+    }
+
+    if (msg.type === 'system') {
+      const s = document.createElement('div');
+      s.className = 'system-msg';
+      s.innerHTML = editMode
+        ? `<span contenteditable="true" data-id="${msg.id}" data-field="text" onblur="saveField(this)" style="outline:1px dashed #ccc;border-radius:4px;padding:1px 4px">${msg.text}</span>`
+        : msg.text;
+      container.appendChild(s);
+      prevSender = null; prevType = null;
+      return;
+    }
+
+    // Chat message
+    const sameSender = msg.sender === prevSender && prevType === msg.type;
+    const row = document.createElement('div');
+    row.className = `msg-row ${msg.type}` + (sameSender ? ' no-avatar' : '');
+    row.dataset.id = msg.id;
+
+    const avatarHTML = msg.type !== 'mine'
+      ? `<div class="msg-avatar" style="background:${avatarColor(msg.sender)}">${initials(msg.sender)}</div>`
+      : '';
+
+    const senderHTML = (!sameSender && msg.type !== 'mine')
+      ? `<div class="sender-name">${msg.sender}</div>` : '';
+
+    row.innerHTML = `
+      ${avatarHTML}
+      <div class="bubble-wrap">
+        ${senderHTML}
+        <div class="bubble" onclick="onBubbleClick(${msg.id}, this)" title="Tap to edit">
+          <div class="bubble-text">${escHtml(msg.text)}</div>
+          <span class="edit-hint">tap to edit</span>
+        </div>
+        <div class="inline-editor" id="editor-${msg.id}">
+          <div class="editor-fields">
+            <div class="editor-field">
+              <label>From</label>
+              <input type="text" id="ef-sender-${msg.id}" value="${msg.sender}" placeholder="Sender name">
+            </div>
+            <div class="editor-field">
+              <label>Time</label>
+              <input type="text" id="ef-time-${msg.id}" value="${msg.time}" placeholder="e.g. 09:15">
+            </div>
+          </div>
+          <textarea class="editor-textarea" id="ef-text-${msg.id}" rows="3">${msg.text}</textarea>
+          <div class="editor-btns">
+            <button class="btn-delete" onclick="deleteMsg(${msg.id})">Delete</button>
+            <button class="btn-cancel" onclick="cancelEdit(${msg.id})">Cancel</button>
+            <button class="btn-save" onclick="saveEdit(${msg.id})">Save</button>
+          </div>
+        </div>
+        <div class="msg-time">${msg.time}</div>
+      </div>
+    `;
+
+    container.appendChild(row);
+    prevSender = msg.sender;
+    prevType = msg.type;
+  });
+
+  // Scroll to bottom on first load
+  container.scrollTop = container.scrollHeight;
+}
+
+function escHtml(t) {
+  return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+}
+
+// ─── Edit logic ──────────────────────────────────────────────────────────────
+function onBubbleClick(id, bubbleEl) {
+  if (currentEdit === id) return;
+  if (currentEdit !== null) cancelEdit(currentEdit);
+
+  currentEdit = id;
+  bubbleEl.classList.add('editing');
+
+  const editor = document.getElementById('editor-' + id);
+  editor.classList.add('active');
+
+  // Auto-grow textarea
+  const ta = document.getElementById('ef-text-' + id);
+  ta.style.height = 'auto';
+  ta.style.height = ta.scrollHeight + 'px';
+  ta.addEventListener('input', () => { ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + 'px'; });
+  ta.focus();
+}
+
+function saveEdit(id) {
+  const msg = MESSAGES.find(m => m.id === id);
+  if (!msg) return;
+  msg.sender = document.getElementById('ef-sender-' + id).value.trim() || msg.sender;
+  msg.time = document.getElementById('ef-time-' + id).value.trim() || msg.time;
+  msg.text = document.getElementById('ef-text-' + id).value;
+  currentEdit = null;
+  render();
+}
+
+function cancelEdit(id) {
+  const editor = document.getElementById('editor-' + id);
+  if (editor) editor.classList.remove('active');
+  const row = document.querySelector(`.msg-row[data-id="${id}"]`);
+  if (row) { const b = row.querySelector('.bubble'); if (b) b.classList.remove('editing'); }
+  currentEdit = null;
+}
+
+function deleteMsg(id) {
+  if (!confirm('Delete this message?')) return;
+  const i = MESSAGES.findIndex(m => m.id === id);
+  if (i >= 0) MESSAGES.splice(i, 1);
+  currentEdit = null;
+  render();
+}
+
+function saveField(el) {
+  const id = parseInt(el.dataset.id);
+  const field = el.dataset.field;
+  const msg = MESSAGES.find(m => m.id === id);
+  if (msg) msg[field] = el.innerText.trim();
+}
+
+// ─── Add new message ─────────────────────────────────────────────────────────
+function showWhoChooser() {
+  const text = document.getElementById('newMsgInput').value.trim();
+  if (!text) { document.getElementById('newMsgInput').focus(); return; }
+  const chooser = document.getElementById('whoChooser');
+  chooser.classList.toggle('active');
+}
+
+function addMessage(type) {
+  const text = document.getElementById('newMsgInput').value.trim();
+  if (!text) return;
+  document.getElementById('whoChooser').classList.remove('active');
+
+  MESSAGES.push({
+    id: nextId++,
+    type,
+    sender: type === 'mine' ? 'Ali Taha (student)' : 'Michael Phillimore',
+    time: new Date().toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'}),
+    text
+  });
+
+  document.getElementById('newMsgInput').value = '';
+  render();
+  const c = document.getElementById('messages');
+  c.scrollTop = c.scrollHeight;
+}
+
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    showWhoChooser();
+  }
+  if (e.key === 'Escape') {
+    document.getElementById('whoChooser').classList.remove('active');
+  }
+}
+
+function toggleEditMode() {
+  editMode = !editMode;
+  const banner = document.getElementById('editBanner');
+  banner.classList.toggle('hidden', !editMode);
+  if (currentEdit) cancelEdit(currentEdit);
+  render();
+}
+
+// Close chooser on outside click
+document.addEventListener('click', (e) => {
+  const chooser = document.getElementById('whoChooser');
+  if (!chooser.contains(e.target) && !e.target.closest('.send-btn')) {
+    chooser.classList.remove('active');
+  }
+});
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+render();
+</script>
+</body>
+</html>

@@ -3,6 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="theme-color" content="#000000">
 <title>Emily and Michael</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -28,7 +32,8 @@ html, body {
 }
 
 .app {
-  display: flex; flex-direction: column; height: 100vh;
+  display: flex; flex-direction: column;
+  height: 100vh; height: 100dvh;
   max-width: 480px; margin: 0 auto; background: var(--bg);
 }
 
@@ -413,7 +418,19 @@ function del(id) {
   if(!confirm('Delete this message?')) return;
   const i=DATA.findIndex(x=>x.id==id);
   if(i>=0) DATA.splice(i,1);
+  pruneOrphanTs();
   curEdit=null; render();
+}
+function pruneOrphanTs() {
+  for (let i = DATA.length - 1; i >= 0; i--) {
+    if (DATA[i].type !== 'ts') continue;
+    let hasMsg = false;
+    for (let j = i + 1; j < DATA.length; j++) {
+      if (DATA[j].type === 'ts') break;
+      if (DATA[j].type === 'other' || DATA[j].type === 'mine') { hasMsg = true; break; }
+    }
+    if (!hasMsg) DATA.splice(i, 1);
+  }
 }
 function sf(el) {
   const m=DATA.find(x=>x.id==parseFloat(el.dataset.id));

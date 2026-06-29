@@ -6,28 +6,33 @@
 <title>Emily and Michael</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
 :root {
   --bg: #000;
-  --header-bg: #1c1c1e;
-  --bubble-other: #1c1c1e;
-  --bubble-other-border: #3a3a3c;
+  --header-bg: #111;
+  --bubble-other: #292929;
+  --bubble-other-border: #e8722a;
   --bubble-mine: #5b5ea6;
   --text: #fff;
   --text-dim: #8e8e93;
   --mention: #e8722a;
-  --border: #2c2c2e;
-  --input-bg: #1c1c1e;
+  --border: #222;
+  --input-bg: #111;
   --input-field: #2c2c2e;
 }
+
 html, body {
   height: 100%; background: var(--bg); color: var(--text);
   font-family: -apple-system, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
   overflow: hidden;
 }
+
 .app {
   display: flex; flex-direction: column; height: 100vh;
   max-width: 480px; margin: 0 auto; background: var(--bg);
 }
+
+/* ── Header ── */
 .header {
   display: flex; align-items: center; gap: 10px;
   padding: 12px 16px 10px;
@@ -35,65 +40,100 @@ html, body {
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
 }
-.back { font-size: 28px; color: #007aff; cursor: pointer; line-height: 1; margin-right: 2px; }
+.back { font-size: 28px; color: #fff; cursor: pointer; line-height: 1; margin-right: 2px; }
 .h-avatar {
   width: 42px; height: 42px; border-radius: 50%; flex-shrink: 0;
   background: #5b5ea6; display: flex; align-items: center;
   justify-content: center; font-size: 15px; font-weight: 700;
+  overflow: hidden;
 }
+.h-avatar img { width: 100%; height: 100%; object-fit: cover; }
 .h-info { flex: 1; min-width: 0; }
-.h-name { font-size: 17px; font-weight: 600; }
+.h-name { font-size: 17px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .h-sub { font-size: 12px; color: var(--text-dim); margin-top: 1px; }
 .h-icons { display: flex; gap: 22px; align-items: center; flex-shrink: 0; }
-.h-icons svg { width: 22px; height: 22px; fill: #007aff; cursor: pointer; }
+.h-icons svg { width: 22px; height: 22px; fill: #fff; cursor: pointer; }
+
+/* ── Messages ── */
 .messages { flex: 1; overflow-y: auto; padding: 4px 0 8px; }
 .messages::-webkit-scrollbar { display: none; }
+
+/* Timestamp header */
 .ts-divider {
   text-align: center; font-size: 12.5px; color: var(--text-dim);
-  padding: 18px 16px 6px;
+  padding: 18px 16px 6px; letter-spacing: 0.1px;
 }
+
+/* System message */
 .sys-msg {
   text-align: center; font-size: 12px; color: var(--text-dim);
   padding: 4px 32px 6px; line-height: 1.4;
 }
+
+/* Message row */
 .msg-row {
   display: flex; align-items: flex-end; gap: 8px;
   padding: 2px 12px; position: relative;
 }
-.msg-row.mine { flex-direction: row-reverse; padding-left: 56px; }
-.msg-row.other { padding-right: 56px; }
+.msg-row.mine { flex-direction: row-reverse; padding-left: 72px; }
+.msg-row.other { padding-right: 52px; }
 .msg-row.no-av .av { visibility: hidden; }
+
+/* Avatar */
 .av {
-  width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
+  width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
   font-size: 13px; font-weight: 700; color: #fff;
-  align-self: flex-end; position: relative;
+  align-self: flex-end; position: relative; overflow: hidden;
 }
+.av img { width: 100%; height: 100%; object-fit: cover; }
 .av .dot {
   position: absolute; bottom: 0; right: 0;
-  width: 11px; height: 11px; background: #636366;
-  border-radius: 50%; border: 2px solid var(--bg);
+  width: 13px; height: 13px; background: #444;
+  border-radius: 50%; border: 2.5px solid var(--bg);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 7px; color: #aaa; font-weight: 700;
 }
 .msg-row.mine .av { display: none; }
-.bwrap { display: flex; flex-direction: column; max-width: 78%; }
-.msg-row.mine .bwrap { align-items: flex-end; }
+
+/* Bubble wrapper */
+.bwrap { display: flex; flex-direction: column; max-width: 82%; }
+.msg-row.mine .bwrap { align-items: flex-end; max-width: 72%; }
 .msg-row.other .bwrap { align-items: flex-start; }
-.sender { font-size: 12.5px; color: var(--text-dim); margin-bottom: 3px; padding-left: 2px; }
+
+.sender { font-size: 12px; color: var(--text-dim); margin-bottom: 3px; padding-left: 4px; }
+
+/* Bubble */
 .bubble {
   background: var(--bubble-other); color: var(--text);
-  border-radius: 18px; padding: 12px 14px;
-  font-size: 17px; line-height: 1.42;
+  border-radius: 14px; padding: 12px 14px 12px 11px;
+  font-size: 16px; line-height: 1.45;
   border-left: 3px solid var(--bubble-other-border);
   word-break: break-word; white-space: pre-wrap;
   cursor: pointer; transition: opacity 0.1s;
+  outline: none;
 }
-.msg-row.mine .bubble { background: var(--bubble-mine); border-left: none; }
+.msg-row.mine .bubble {
+  background: var(--bubble-mine);
+  border-left: none;
+  border-radius: 20px;
+  padding: 11px 18px;
+  font-size: 16px;
+}
 .bubble:active { opacity: 0.8; }
-.bubble.open { outline: 2px solid #5b5ea6; outline-offset: 2px; }
+.bubble.open { box-shadow: 0 0 0 2px #5b5ea6; }
+
+/* Orange @mentions */
 .bubble .at { color: var(--mention); font-weight: 500; }
+
+/* Inline editor (appears below bubble) */
 .editor { display: none; flex-direction: column; gap: 6px; margin-top: 6px; }
 .editor.on { display: flex; }
-.ef { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-dim); }
+
+.ef {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; color: var(--text-dim);
+}
 .ef label { width: 44px; text-align: right; flex-shrink: 0; }
 .ef input {
   flex: 1; background: var(--input-field); border: 1px solid #3a3a3c;
@@ -101,6 +141,7 @@ html, body {
   font-family: inherit; color: #fff; outline: none;
 }
 .ef input:focus { border-color: #5b5ea6; }
+
 .etarea {
   width: 100%; background: var(--input-field); border: 1px solid #3a3a3c;
   border-radius: 10px; padding: 10px 12px; font-size: 15px;
@@ -108,6 +149,7 @@ html, body {
   min-height: 72px; line-height: 1.4; outline: none;
 }
 .etarea:focus { border-color: #5b5ea6; }
+
 .ebtns { display: flex; gap: 8px; justify-content: flex-end; }
 .ebtns button {
   padding: 6px 16px; border-radius: 14px; border: none;
@@ -116,6 +158,8 @@ html, body {
 .bdel { background: #ff3b30; }
 .bcnl { background: #3a3a3c; }
 .bsav { background: #5b5ea6; }
+
+/* ── Input bar ── */
 .input-bar {
   display: flex; align-items: center; gap: 10px;
   padding: 8px 12px 12px;
@@ -128,7 +172,7 @@ html, body {
   font-size: 24px; color: #fff; cursor: pointer; flex-shrink: 0;
   font-weight: 300; line-height: 1; position: relative;
 }
-.add-btn .ndot {
+.add-btn .dot {
   position: absolute; top: -1px; right: -1px;
   width: 9px; height: 9px; background: #ff3b30;
   border-radius: 50%; border: 2px solid var(--input-bg);
@@ -145,6 +189,8 @@ html, body {
 .ifield input::placeholder { color: #636366; }
 .i-icons { display: flex; gap: 14px; margin-left: 10px; }
 .i-icons svg { width: 22px; height: 22px; fill: #8e8e93; cursor: pointer; }
+
+/* Who chooser */
 .chooser {
   display: none; position: fixed;
   left: 50%; bottom: 72px; transform: translateX(-50%);
@@ -157,7 +203,7 @@ html, body {
 .ch-opt {
   display: flex; align-items: center; gap: 12px;
   padding: 15px 20px; font-size: 16px; cursor: pointer;
-  border-bottom: 1px solid #3a3a3c; color: #fff;
+  border-bottom: 1px solid #3a3a3c;
 }
 .ch-opt:last-child { border-bottom: none; }
 .ch-opt:hover, .ch-opt:active { background: #3a3a3c; }
@@ -170,6 +216,8 @@ html, body {
 </head>
 <body>
 <div class="app">
+
+  <!-- Header -->
   <div class="header">
     <span class="back">&#8592;</span>
     <div class="h-avatar">EM</div>
@@ -178,14 +226,19 @@ html, body {
       <div class="h-sub" id="chatSub">3 participants</div>
     </div>
     <div class="h-icons">
+      <!-- Video -->
       <svg viewBox="0 0 24 24"><path d="M15 8v8H5V8h10zm1-2H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3.5l4 3v-9l-4 3V7a1 1 0 0 0-1-1z"/></svg>
+      <!-- Phone -->
       <svg viewBox="0 0 24 24"><path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1-9.4 0-17-7.6-17-17 0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1L6.6 10.8z"/></svg>
+      <!-- Info -->
       <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
     </div>
   </div>
 
+  <!-- Messages -->
   <div class="messages" id="msgs"></div>
 
+  <!-- Who chooser popup -->
   <div class="chooser" id="chooser">
     <div class="ch-opt" onclick="addMsg('other')">
       <div class="ch-av" style="background:#5b5ea6">MP</div>
@@ -197,90 +250,120 @@ html, body {
     </div>
   </div>
 
+  <!-- Input bar -->
   <div class="input-bar">
-    <div class="add-btn"><span>+</span><div class="ndot"></div></div>
+    <div class="add-btn"><span>+</span><div class="dot"></div></div>
     <div class="ifield">
       <input type="text" id="msgIn" placeholder="Type a message" onkeydown="onKey(event)">
       <div class="i-icons">
+        <!-- Emoji -->
         <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z"/></svg>
+        <!-- Camera -->
         <svg viewBox="0 0 24 24"><path d="M12 15.2A3.2 3.2 0 1 1 12 8.8a3.2 3.2 0 0 1 0 6.4zm0-8.4A5.2 5.2 0 1 0 12 17.2 5.2 5.2 0 0 0 12 6.8zM9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9z"/></svg>
+        <!-- Mic -->
         <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm-1-9c0-.55.45-1 1-1s1 .45 1 1v6c0 .55-.45 1-1 1s-1-.45-1-1V5zm6 6c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
       </div>
     </div>
   </div>
+
 </div>
 
 <script>
+// ── Data ─────────────────────────────────────────────────────────────────────
 const DATA = [
-  { id:1, type:'sys', text:'Michael Phillimore added Emily Bousfield and 5 others to the chat.' },
-  { id:2, type:'ts', text:'Sunday 10:44' },
-  { id:3, type:'other', sender:'Michael Phillimore', time:'10:44',
-    rich:'Good Morning All, in case you were not aware - you have units (nearly universally Robots) to complete before you finish your access course.\n\nLessons will go ahead as normal tomorrow. I greatly suggest keeping things simple and then we should be able to have you all finished...well...tomorrow, but if not tomorrow by Tues. But the forecast for Tuesday is a firey inferno. I am afraid the shorts will be out. And if that doesn\'t scare you to do the work, Im not sure what will 😄 😉\n\nEnjoy your sunday!' },
-  { id:4, type:'ts', text:'Monday 09:02' },
-  { id:5, type:'other', sender:'Michael Phillimore', time:'09:02', rich:'So I have Cylle.... where are the rest of you guys?' },
-  { id:6, type:'other', sender:'Michael Phillimore', time:'09:12',
+  { id:1,  type:'sys',   text:'Michael Phillimore added Emily Bousfield and 5 others to the chat.' },
+  { id:2,  type:'ts',    text:'Sunday 10:44' },
+  { id:3,  type:'other', sender:'Michael Phillimore', time:'10:44',
+    text:'Good Morning All, in case you were not aware - you have units (nearly universally Robots) to complete before you finish your access course.\n\nLessons will go ahead as normal tomorrow. I greatly suggest keeping things simple and then we should be able to have you all finished...well...tomorrow, but if not tomorrow by Tues. But the forecast for Tuesday is a firey inferno. I am afraid the shorts will be out. And if that\'t scare you to do the work, Im not sure what will 😄 😉\n\nEnjoy your sunday!' },
+  { id:4,  type:'ts',    text:'Monday 09:02' },
+  { id:5,  type:'other', sender:'Michael Phillimore', time:'09:02', text:'So I have Cylle.... where are the rest of you guys?' },
+  { id:6,  type:'other', sender:'Michael Phillimore', time:'09:12', text:'[AT] [FH] [DR] [TR] - where are you?',
     rich:'<span class="at">Ali Taha (student)</span>, <span class="at">Fahmi Hussein (student)</span>, <span class="at">Daania Rizwan (student)</span>, <span class="at">Teisha Race-Kerr (student)</span> - where are you?' },
-  { id:7, type:'mine', sender:'Ali Taha (student)', time:'09:15', rich:"Sorry sir I'll be there soon, my car had some issues" },
-  { id:8, type:'other', sender:'Michael Phillimore', time:'09:30', rich:'We are in 113 until mid day.\n\nThis is astonishing that cyclle is the only one here, and other then Alis message, no comms from you. What is going on folks???' },
-  { id:9, type:'other', sender:'Michael Phillimore', time:'12:53', rich:'we are now back in 106 🙂' },
-  { id:10, type:'ts', text:'Tuesday 08:41' },
-  { id:11, type:'sys', text:'Michael Phillimore removed Cylle Saringan (student) from the chat.' },
-  { id:12, type:'sys', text:'Michael Phillimore removed Fahmi Hussein (student) from the chat.' },
-  { id:13, type:'sys', text:'Michael Phillimore removed Teisha Race-Kerr (student) from the chat.' },
+  { id:7,  type:'mine',  sender:'Ali Taha (student)', time:'09:15', text:"Sorry sir I'll be there soon, my car had some issues" },
+  { id:8,  type:'other', sender:'Michael Phillimore', time:'09:30', text:'We are in 113 until mid day.\n\nThis is astonishing that cyclle is the only one here, and other then Alis message, no comms from you. What is going on folks???' },
+  { id:9,  type:'other', sender:'Michael Phillimore', time:'12:53', text:'we are now back in 106 🙂' },
+  { id:10, type:'ts',    text:'Tuesday 08:41' },
+  { id:11, type:'sys',   text:'Michael Phillimore removed Cylle Saringan (student) from the chat.' },
+  { id:12, type:'sys',   text:'Michael Phillimore removed Fahmi Hussein (student) from the chat.' },
+  { id:13, type:'sys',   text:'Michael Phillimore removed Teisha Race-Kerr (student) from the chat.' },
   { id:14, type:'other', sender:'Michael Phillimore', time:'08:41',
+    text:'You two are now the only ones who have not passed.',
     rich:'You two are now the only ones who have not passed. <span class="at">Daania Rizwan (student)</span> you didn\'t even communicate with us yesterday, which is frankly just astonishing at this point of the year and given you have ONE unit left. <span class="at">Ali Taha (student)</span> you were working but nothing has been handed in! We need to be seeing that tracking sheet go green.....' },
-  { id:15, type:'other', sender:'Michael Phillimore', time:'09:11', rich:'9:10 and neither of you two are here. We could just fail both of you now and be done with it??' },
-  { id:16, type:'other', sender:'Michael Phillimore', time:'09:12', rich:'we have an Ali!' },
-  { id:17, type:'ts', text:'Wednesday 09:20' },
-  { id:18, type:'sys', text:'Michael Phillimore removed Daania Rizwan (student) from the chat.' },
+  { id:15, type:'other', sender:'Michael Phillimore', time:'09:11', text:'9:10 and neither of you two are here. We could just fail both of you now and be done with it??' },
+  { id:16, type:'other', sender:'Michael Phillimore', time:'09:12', text:'we have an Ali!' },
+  { id:17, type:'ts',    text:'Wednesday 09:20' },
+  { id:18, type:'sys',   text:'Michael Phillimore removed Daania Rizwan (student) from the chat.' },
   { id:19, type:'other', sender:'Michael Phillimore', time:'09:20',
+    text:'Ali Taha (student) what progress have you made/work have you handed in please?',
     rich:'<span class="at">Ali Taha (student)</span> what progress have you made/work have you handed in please? You said you were close to a couple of things yesterday, are these now done?' },
-  { id:20, type:'ts', text:'Thursday 08:23' },
+  { id:20, type:'ts',    text:'Thursday 08:23' },
   { id:21, type:'other', sender:'Michael Phillimore', time:'08:23',
+    text:'Ali Taha (student) - A DAY later with no reply, what is your status??',
     rich:'<span class="at">Ali Taha (student)</span> - A DAY later with no reply, what is your status?? At this point you have 8 units to complete and 2 days left on site to do them - we need to see progress NOW. You can do it but you appear to be choosing not to do it. You basically have to be working on this full time every day between now and next Tuesday to be getting through.\n\nI will be honest if we don\'t see major progress today I am going to have to discuss your future on the course with Jon.' },
-  { id:22, type:'ts', text:'Thursday 15:31' },
-  { id:23, type:'other', sender:'Michael Phillimore', time:'15:31',
+  { id:22, type:'ts',    text:'Thursday 15:31' },
+  { id:22.5, type:'other', sender:'Michael Phillimore', time:'15:31',
+    text:'Right Ali Taha (student) in lieu of complete lack of contact and work...',
     rich:'Right <span class="at">Ali Taha (student)</span> in lieu of complete lack of contact and work, I want you on site tomorrow at 9 - you will be in with my other Level 3s in IOT106.\n\nYou will also have a 5-day timetable next week where every day you are in at 9 in the morning until close of play.\n\nIf we cant see work being produced off site then you have left us little option.' },
-  { id:24, type:'ts', text:'Yesterday 16:40' },
-  { id:25, type:'other', sender:'Michael Phillimore', time:'16:40',
+  { id:23, type:'ts',    text:'Yesterday 16:40' },
+  { id:24, type:'other', sender:'Michael Phillimore', time:'16:40',
+    text:'Ali Taha (student) this is to confirm you\'ve now passed the course.',
     rich:'<span class="at">Ali Taha (student)</span> this is too confirm you\'ve now passed the course. Well done.\n\nBut I greatly encourage you to find solutions so that you don\'t have this backlog in future, as there will come a point you won\'t be able to get it finished in time.\n\nEnjoy your summer!' },
-  { id:26, type:'mine', sender:'Ali Taha (student)', time:'16:41', rich:'Thank you sir. Will do 👍' }
+  { id:25, type:'mine',  sender:'Ali Taha (student)', time:'16:41', text:'Thank you sir. Will do 👍' }
 ];
 
-let uid=200, curEdit=null;
-const AV={'Michael Phillimore':{bg:'#5b5ea6',i:'MP'},'Ali Taha (student)':{bg:'#e8722a',i:'AT'}};
-function av(n){return AV[n]||{bg:'#636366',i:n.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase()};}
+let uid = 200, curEdit = null;
 
-function render(){
-  const c=document.getElementById('msgs'); c.innerHTML='';
-  let ps=null,pt=null;
-  DATA.forEach(m=>{
-    if(m.type==='ts'){
-      const d=document.createElement('div'); d.className='ts-divider';
-      d.innerHTML=`<span contenteditable="true" data-id="${m.id}" data-f="text" onblur="sf(this)">${esc(m.text)}</span>`;
-      c.appendChild(d); ps=null; pt=null; return;
+const AV = {
+  'Michael Phillimore': { bg:'#5b5ea6', initials:'MP' },
+  'Ali Taha (student)': { bg:'#e8722a', initials:'AT' },
+};
+function avFor(name) {
+  return AV[name] || { bg:'#636366', initials: name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase() };
+}
+
+// ── Render ────────────────────────────────────────────────────────────────────
+function render() {
+  const c = document.getElementById('msgs');
+  c.innerHTML = '';
+  let prevSender = null, prevType = null;
+
+  DATA.forEach(m => {
+    if (m.type === 'ts') {
+      const d = document.createElement('div');
+      d.className = 'ts-divider';
+      d.innerHTML = `<span contenteditable="true" data-id="${m.id}" data-f="text" onblur="sf(this)">${esc(m.text)}</span>`;
+      c.appendChild(d); prevSender=null; prevType=null; return;
     }
-    if(m.type==='sys'){
-      const s=document.createElement('div'); s.className='sys-msg';
-      s.innerHTML=`<span contenteditable="true" data-id="${m.id}" data-f="text" onblur="sf(this)">${esc(m.text||'')}</span>`;
-      c.appendChild(s); ps=null; pt=null; return;
+    if (m.type === 'sys') {
+      const s = document.createElement('div');
+      s.className = 'sys-msg';
+      s.innerHTML = `<span contenteditable="true" data-id="${m.id}" data-f="text" onblur="sf(this)">${esc(m.text)}</span>`;
+      c.appendChild(s); prevSender=null; prevType=null; return;
     }
-    const same=m.sender===ps&&m.type===pt;
-    const row=document.createElement('div');
-    row.className=`msg-row ${m.type}${same?' no-av':''}`;
-    row.dataset.id=m.id;
-    const a=av(m.sender);
-    const avH=m.type!=='mine'?`<div class="av" style="background:${a.bg}">${a.i}<div class="dot"></div></div>`:'';
-    const snH=!same&&m.type!=='mine'?`<div class="sender">${esc(m.sender)}</div>`:'';
-    const content=(m.rich||esc(m.text||'')).replace(/\n/g,'<br>');
-    const editText=(m.text||m.rich||'').replace(/<[^>]+>/g,'');
-    row.innerHTML=`${avH}
-      <div class="bwrap">${snH}
-        <div class="bubble" id="b${m.id}" onclick="openEdit(${m.id},this)"><div>${content}</div></div>
+
+    const same = m.sender===prevSender && m.type===prevType;
+    const row = document.createElement('div');
+    row.className = `msg-row ${m.type}${same?' no-av':''}`;
+    row.dataset.id = m.id;
+
+    const a = avFor(m.sender);
+    const avHTML = m.type!=='mine'
+      ? `<div class="av" style="background:${a.bg}">${a.initials}<div class="dot">&#xd7;</div></div>` : '';
+    const snHTML = (!same && m.type!=='mine')
+      ? `<div class="sender">${esc(m.sender)}</div>` : '';
+
+    const richContent = m.rich || esc(m.text).replace(/\n/g,'<br>');
+
+    row.innerHTML = `${avHTML}
+      <div class="bwrap">
+        ${snHTML}
+        <div class="bubble" id="b${m.id}" onclick="openEdit(${m.id},this)">
+          <div class="bubble-text">${richContent}</div>
+        </div>
         <div class="editor" id="e${m.id}">
           <div class="ef"><label>From</label><input id="es${m.id}" value="${esc(m.sender)}"></div>
-          <div class="ef"><label>Time</label><input id="et${m.id}" value="${esc(m.time||'')}"></div>
-          <textarea class="etarea" id="ex${m.id}">${editText}</textarea>
+          <div class="ef"><label>Time</label><input id="et${m.id}" value="${esc(m.time)}"></div>
+          <textarea class="etarea" id="ex${m.id}">${m.text}</textarea>
           <div class="ebtns">
             <button class="bdel" onclick="del(${m.id})">Delete</button>
             <button class="bcnl" onclick="closeEdit(${m.id})">Cancel</button>
@@ -288,66 +371,78 @@ function render(){
           </div>
         </div>
       </div>`;
-    c.appendChild(row); ps=m.sender; pt=m.type;
+
+    c.appendChild(row);
+    prevSender=m.sender; prevType=m.type;
   });
-  c.scrollTop=c.scrollHeight;
+
+  c.scrollTop = c.scrollHeight;
 }
 
-function esc(t=''){return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function esc(t='') {
+  return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
 
-function openEdit(id,bEl){
-  if(curEdit===id)return;
-  if(curEdit!==null)closeEdit(curEdit);
-  curEdit=id; bEl.classList.add('open');
-  const ed=document.getElementById('e'+id); ed.classList.add('on');
+// ── Edit ──────────────────────────────────────────────────────────────────────
+function openEdit(id, bEl) {
+  if (curEdit===id) return;
+  if (curEdit!==null) closeEdit(curEdit);
+  curEdit=id;
+  bEl.classList.add('open');
+  const ed=document.getElementById('e'+id);
+  ed.classList.add('on');
   const ta=document.getElementById('ex'+id);
   ta.style.height='auto'; ta.style.height=ta.scrollHeight+'px';
-  ta.addEventListener('input',()=>{ta.style.height='auto';ta.style.height=ta.scrollHeight+'px';});
+  ta.addEventListener('input',()=>{ ta.style.height='auto'; ta.style.height=ta.scrollHeight+'px'; });
   ta.focus();
 }
-function closeEdit(id){
-  const b=document.getElementById('b'+id); if(b)b.classList.remove('open');
-  const e=document.getElementById('e'+id); if(e)e.classList.remove('on');
+function closeEdit(id) {
+  const b=document.getElementById('b'+id); if(b) b.classList.remove('open');
+  const e=document.getElementById('e'+id); if(e) e.classList.remove('on');
   curEdit=null;
 }
-function save(id){
-  const m=DATA.find(x=>x.id==id); if(!m)return;
+function save(id) {
+  const m=DATA.find(x=>x.id==id); if(!m) return;
   m.sender=document.getElementById('es'+id).value.trim()||m.sender;
   m.time=document.getElementById('et'+id).value.trim()||m.time;
   m.text=document.getElementById('ex'+id).value;
-  m.rich=null; curEdit=null; render();
-}
-function del(id){
-  if(!confirm('Delete this message?'))return;
-  const i=DATA.findIndex(x=>x.id==id); if(i>=0)DATA.splice(i,1);
+  delete m.rich;
   curEdit=null; render();
 }
-function sf(el){
+function del(id) {
+  if(!confirm('Delete this message?')) return;
+  const i=DATA.findIndex(x=>x.id==id);
+  if(i>=0) DATA.splice(i,1);
+  curEdit=null; render();
+}
+function sf(el) {
   const m=DATA.find(x=>x.id==parseFloat(el.dataset.id));
-  if(m)m[el.dataset.f]=el.innerText.trim();
+  if(m) m[el.dataset.f]=el.innerText.trim();
 }
-function onKey(e){
-  if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();toggleC();}
-  if(e.key==='Escape')document.getElementById('chooser').classList.remove('on');
+
+// ── Add message ───────────────────────────────────────────────────────────────
+function onKey(e) {
+  if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); toggleChooser(); }
+  if(e.key==='Escape') document.getElementById('chooser').classList.remove('on');
 }
-function toggleC(){
+function toggleChooser() {
   const v=document.getElementById('msgIn').value.trim();
-  if(!v){document.getElementById('msgIn').focus();return;}
+  if(!v){ document.getElementById('msgIn').focus(); return; }
   document.getElementById('chooser').classList.toggle('on');
 }
-function addMsg(type){
-  const v=document.getElementById('msgIn').value.trim(); if(!v)return;
+function addMsg(type) {
+  const v=document.getElementById('msgIn').value.trim(); if(!v) return;
   document.getElementById('chooser').classList.remove('on');
   const now=new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
-  DATA.push({id:uid++,type,sender:type==='mine'?'Ali Taha (student)':'Michael Phillimore',time:now,rich:v});
+  DATA.push({ id:uid++, type, sender:type==='mine'?'Ali Taha (student)':'Michael Phillimore', time:now, text:v });
   document.getElementById('msgIn').value='';
   render();
 }
-document.querySelector('.add-btn').addEventListener('click',toggleC);
 document.addEventListener('click',e=>{
   const ch=document.getElementById('chooser');
-  if(!ch.contains(e.target)&&!e.target.closest('.ifield')&&!e.target.closest('.add-btn'))ch.classList.remove('on');
+  if(!ch.contains(e.target)&&!e.target.closest('.ifield')) ch.classList.remove('on');
 });
+
 render();
 </script>
 </body>

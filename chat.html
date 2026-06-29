@@ -112,7 +112,7 @@ html, body {
 /* Bubble */
 .bubble {
   background: var(--bubble-other); color: var(--text);
-  border-radius: 12px; padding: 3px 10px 3px 8px;
+  border-radius: 12px; padding: 0 10px 0 8px;
   font-size: 15px; line-height: 1.4;
   border-left: 2px solid var(--bubble-other-border);
   word-break: break-word; white-space: pre-wrap;
@@ -123,7 +123,7 @@ html, body {
   background: var(--bubble-mine);
   border-left: none;
   border-radius: 18px;
-  padding: 3px 12px;
+  padding: 0 12px;
   font-size: 15px;
 }
 .bubble:active { opacity: 0.8; }
@@ -258,7 +258,7 @@ html, body {
 
   <!-- Input bar -->
   <div class="input-bar">
-    <div class="add-btn"><span>+</span><div class="dot"></div></div>
+    <div class="add-btn" onclick="toggleChooser()"><span>+</span><div class="dot"></div></div>
     <div class="ifield">
       <input type="text" id="msgIn" placeholder="Type a message" onkeydown="onKey(event)">
       <div class="i-icons">
@@ -483,7 +483,7 @@ function addMsg(type) {
 }
 document.addEventListener('click',e=>{
   const ch=document.getElementById('chooser');
-  if(!ch.contains(e.target)&&!e.target.closest('.ifield')) ch.classList.remove('on');
+  if(!ch.contains(e.target)&&!e.target.closest('.ifield')&&!e.target.closest('.add-btn')) ch.classList.remove('on');
 });
 
 render();

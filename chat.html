@@ -112,7 +112,7 @@ html, body {
 /* Bubble */
 .bubble {
   background: var(--bubble-other); color: var(--text);
-  border-radius: 12px; padding: 0 10px 0 8px;
+  border-radius: 12px; padding: 6px 10px 6px 8px;
   font-size: 15px; line-height: 1.4;
   border-left: 2px solid var(--bubble-other-border);
   word-break: break-word; white-space: pre-wrap;
@@ -123,7 +123,7 @@ html, body {
   background: var(--bubble-mine);
   border-left: none;
   border-radius: 18px;
-  padding: 0 12px;
+  padding: 6px 12px;
   font-size: 15px;
 }
 .bubble:active { opacity: 0.8; }
@@ -363,9 +363,7 @@ function render() {
     row.innerHTML = `${avHTML}
       <div class="bwrap">
         ${snHTML}
-        <div class="bubble" id="b${m.id}" onclick="openEdit(${m.id},this)">
-          <div class="bubble-text">${richContent}</div>
-        </div>
+        <div class="bubble" id="b${m.id}" onclick="openEdit(${m.id},this)">${richContent}</div>
         <div class="editor" id="e${m.id}">
           <div class="ef"><label>From</label><input id="es${m.id}" value="${esc(m.sender)}"></div>
           <div class="ef"><label>Time</label><input id="et${m.id}" value="${esc(m.time)}"></div>

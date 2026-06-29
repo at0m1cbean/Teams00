@@ -3,732 +3,351 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Chat — Emily Bousfield</title>
+<title>Emily and Michael</title>
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-
-  :root {
-    --teams-purple: #6264A7;
-    --teams-purple-dark: #4f5196;
-    --teams-purple-light: #e8e8f4;
-    --teams-bg: #f5f5f5;
-    --bubble-other: #ffffff;
-    --bubble-mine: #6264A7;
-    --text-dark: #242424;
-    --text-light: #ffffff;
-    --text-meta: #616161;
-    --system-text: #616161;
-    --divider-bg: #e0e0e0;
-    --header-h: 60px;
-    --input-h: 64px;
-  }
-
-  html, body {
-    height: 100%;
-    width: 100%;
-    background: #1a1a2e;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  }
-
-  /* Phone shell */
-  .phone {
-    position: relative;
-    width: 390px;
-    height: 844px;
-    background: var(--teams-bg);
-    border-radius: 48px;
-    box-shadow: 0 30px 80px rgba(0,0,0,0.6), inset 0 0 0 2px #333;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-  }
-
-  /* Notch */
-  .phone::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 50%;
-    transform: translateX(-50%);
-    width: 126px; height: 34px;
-    background: #111;
-    border-radius: 0 0 20px 20px;
-    z-index: 100;
-  }
-
-  /* Status bar */
-  .status-bar {
-    background: var(--teams-purple);
-    height: 44px;
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    padding: 0 20px 6px;
-    flex-shrink: 0;
-    z-index: 10;
-  }
-  .status-bar .time { color: #fff; font-size: 15px; font-weight: 600; padding-left: 10px; }
-  .status-bar .icons { display: flex; align-items: center; gap: 6px; padding-right: 4px; }
-  .status-bar .icons svg { fill: #fff; }
-
-  /* Header */
-  .header {
-    background: var(--teams-purple);
-    height: var(--header-h);
-    display: flex;
-    align-items: center;
-    padding: 0 16px;
-    gap: 12px;
-    flex-shrink: 0;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.3);
-    z-index: 9;
-  }
-  .header .back-btn { color: #fff; font-size: 20px; cursor: pointer; padding: 4px; }
-  .header .avatar-stack { display: flex; }
-  .header .avatar-stack .av {
-    width: 36px; height: 36px; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 13px; font-weight: 700; color: #fff;
-    border: 2px solid var(--teams-purple);
-    margin-left: -8px;
-  }
-  .header .avatar-stack .av:first-child { margin-left: 0; }
-  .header .chat-info { flex: 1; }
-  .header .chat-name { color: #fff; font-size: 16px; font-weight: 600; line-height: 1.2; }
-  .header .chat-members { color: rgba(255,255,255,0.75); font-size: 12px; margin-top: 2px; }
-  .header .header-actions { display: flex; gap: 16px; }
-  .header .header-actions .icon { color: #fff; font-size: 20px; cursor: pointer; }
-
-  /* Edit mode banner */
-  .edit-banner {
-    background: #fef3cd;
-    border-bottom: 1px solid #fcd34d;
-    padding: 8px 16px;
-    font-size: 12px;
-    color: #92400e;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-shrink: 0;
-    transition: all 0.2s;
-  }
-  .edit-banner.hidden { display: none; }
-  .edit-banner button {
-    background: #92400e;
-    color: #fff;
-    border: none;
-    border-radius: 12px;
-    padding: 3px 10px;
-    font-size: 11px;
-    cursor: pointer;
-  }
-
-  /* Messages area */
-  .messages {
-    flex: 1;
-    overflow-y: auto;
-    padding: 12px 0 8px;
-    scroll-behavior: smooth;
-    -webkit-overflow-scrolling: touch;
-  }
-  .messages::-webkit-scrollbar { width: 3px; }
-  .messages::-webkit-scrollbar-thumb { background: var(--teams-purple); border-radius: 2px; }
-
-  /* Date divider */
-  .date-divider {
-    display: flex;
-    align-items: center;
-    margin: 12px 16px;
-    gap: 10px;
-  }
-  .date-divider::before, .date-divider::after {
-    content: ''; flex: 1; height: 1px; background: var(--divider-bg);
-  }
-  .date-divider span {
-    font-size: 11px;
-    color: var(--text-meta);
-    background: var(--teams-bg);
-    padding: 2px 8px;
-    border-radius: 10px;
-    border: 1px solid var(--divider-bg);
-    white-space: nowrap;
-  }
-
-  /* System message */
-  .system-msg {
-    text-align: center;
-    margin: 6px 24px;
-    font-size: 11.5px;
-    color: var(--system-text);
-    line-height: 1.4;
-  }
-
-  /* Message row */
-  .msg-row {
-    display: flex;
-    padding: 2px 12px 2px;
-    gap: 8px;
-    align-items: flex-end;
-    position: relative;
-  }
-  .msg-row.mine { flex-direction: row-reverse; }
-
-  /* Avatar */
-  .msg-avatar {
-    width: 32px; height: 32px;
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 12px; font-weight: 700; color: #fff;
-    flex-shrink: 0;
-    align-self: flex-end;
-    margin-bottom: 2px;
-  }
-  .msg-row.mine .msg-avatar { display: none; }
-  .msg-row.no-avatar .msg-avatar { visibility: hidden; }
-
-  /* Bubble */
-  .bubble-wrap { max-width: 72%; display: flex; flex-direction: column; }
-  .msg-row.mine .bubble-wrap { align-items: flex-end; }
-
-  .sender-name {
-    font-size: 11.5px;
-    font-weight: 600;
-    color: var(--teams-purple);
-    margin-bottom: 2px;
-    padding-left: 2px;
-  }
-  .msg-row.mine .sender-name { display: none; }
-
-  .bubble {
-    background: var(--bubble-other);
-    color: var(--text-dark);
-    border-radius: 18px 18px 18px 4px;
-    padding: 10px 14px;
-    font-size: 14.5px;
-    line-height: 1.45;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-    word-break: break-word;
-    white-space: pre-wrap;
-    cursor: pointer;
-    transition: opacity 0.15s;
-    position: relative;
-    border: 1.5px solid transparent;
-  }
-  .msg-row.mine .bubble {
-    background: var(--bubble-mine);
-    color: var(--text-light);
-    border-radius: 18px 18px 4px 18px;
-    box-shadow: 0 1px 3px rgba(98,100,167,0.35);
-  }
-  .bubble:hover { opacity: 0.88; }
-  .bubble.editing {
-    border-color: var(--teams-purple);
-    opacity: 1;
-    box-shadow: 0 0 0 3px rgba(98,100,167,0.2);
-  }
-
-  .msg-time {
-    font-size: 10.5px;
-    color: var(--text-meta);
-    margin-top: 3px;
-    padding: 0 4px;
-  }
-  .msg-row.mine .msg-time { text-align: right; }
-
-  /* Inline editor */
-  .inline-editor {
-    display: none;
-    flex-direction: column;
-    gap: 6px;
-    margin-top: 4px;
-  }
-  .inline-editor.active { display: flex; }
-
-  .editor-fields { display: flex; flex-direction: column; gap: 4px; }
-
-  .editor-field {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 11px;
-    color: var(--text-meta);
-  }
-  .editor-field label { width: 48px; text-align: right; flex-shrink: 0; font-weight: 600; }
-  .editor-field input {
-    flex: 1;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    padding: 4px 8px;
-    font-size: 12px;
-    font-family: inherit;
-    outline: none;
-    background: #fff;
-  }
-  .editor-field input:focus { border-color: var(--teams-purple); }
-
-  .editor-textarea {
-    width: 100%;
-    border: 1px solid #ccc;
-    border-radius: 10px;
-    padding: 8px 10px;
-    font-size: 13.5px;
-    font-family: inherit;
-    resize: vertical;
-    min-height: 60px;
-    outline: none;
-    line-height: 1.4;
-    color: var(--text-dark);
-  }
-  .editor-textarea:focus { border-color: var(--teams-purple); }
-
-  .editor-btns {
-    display: flex;
-    gap: 6px;
-    justify-content: flex-end;
-  }
-  .editor-btns button {
-    padding: 5px 14px;
-    border-radius: 14px;
-    border: none;
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.15s;
-  }
-  .btn-save { background: var(--teams-purple); color: #fff; }
-  .btn-save:hover { background: var(--teams-purple-dark); }
-  .btn-cancel { background: #e0e0e0; color: #444; }
-  .btn-cancel:hover { background: #ccc; }
-  .btn-delete { background: #fee2e2; color: #b91c1c; }
-  .btn-delete:hover { background: #fca5a5; }
-
-  /* Input bar */
-  .input-bar {
-    background: #fff;
-    border-top: 1px solid #e5e5e5;
-    padding: 10px 12px;
-    display: flex;
-    align-items: flex-end;
-    gap: 10px;
-    flex-shrink: 0;
-    min-height: var(--input-h);
-    padding-bottom: max(10px, env(safe-area-inset-bottom, 0px));
-  }
-  .input-bar .input-wrap {
-    flex: 1;
-    background: #f5f5f5;
-    border-radius: 22px;
-    padding: 8px 14px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    border: 1px solid #e0e0e0;
-  }
-  .input-bar input[type=text] {
-    flex: 1;
-    border: none;
-    background: transparent;
-    outline: none;
-    font-size: 14px;
-    font-family: inherit;
-    color: var(--text-dark);
-  }
-  .input-bar input::placeholder { color: #aaa; }
-  .input-bar .send-btn {
-    width: 38px; height: 38px;
-    background: var(--teams-purple);
-    border: none; border-radius: 50%;
-    cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-    transition: background 0.15s;
-  }
-  .input-bar .send-btn:hover { background: var(--teams-purple-dark); }
-  .input-bar .send-btn svg { fill: #fff; width: 18px; height: 18px; }
-
-  /* Add message chooser */
-  .new-msg-who {
-    display: none;
-    position: absolute;
-    bottom: calc(var(--input-h) + 8px);
-    left: 12px; right: 12px;
-    background: #fff;
-    border-radius: 16px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-    overflow: hidden;
-    z-index: 20;
-  }
-  .new-msg-who.active { display: block; }
-  .who-option {
-    padding: 14px 16px;
-    font-size: 14px;
-    cursor: pointer;
-    border-bottom: 1px solid #f0f0f0;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  .who-option:last-child { border-bottom: none; }
-  .who-option:hover { background: var(--teams-purple-light); }
-  .who-option .av-sm {
-    width: 28px; height: 28px; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 11px; font-weight: 700; color: #fff;
-    flex-shrink: 0;
-  }
-
-  /* Tooltip for edit hint */
-  .edit-hint {
-    position: absolute;
-    bottom: calc(100% + 8px);
-    left: 50%; transform: translateX(-50%);
-    background: rgba(0,0,0,0.75);
-    color: #fff;
-    font-size: 11px;
-    padding: 4px 8px;
-    border-radius: 8px;
-    white-space: nowrap;
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.2s;
-    z-index: 5;
-  }
-  .bubble:hover .edit-hint { opacity: 1; }
-
-  /* Home indicator */
-  .home-indicator {
-    position: absolute;
-    bottom: 8px; left: 50%;
-    transform: translateX(-50%);
-    width: 134px; height: 5px;
-    background: rgba(0,0,0,0.3);
-    border-radius: 3px;
-    z-index: 100;
-    pointer-events: none;
-  }
-
-  /* Responsive - on small screens fill the viewport */
-  @media (max-width: 430px) {
-    html, body { background: var(--teams-bg); align-items: stretch; }
-    .phone {
-      width: 100%; height: 100vh;
-      border-radius: 0;
-      box-shadow: none;
-    }
-    .phone::before { display: none; }
-    .home-indicator { display: none; }
-  }
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+:root {
+  --bg: #000;
+  --header-bg: #1c1c1e;
+  --bubble-other: #1c1c1e;
+  --bubble-other-border: #3a3a3c;
+  --bubble-mine: #5b5ea6;
+  --text: #fff;
+  --text-dim: #8e8e93;
+  --mention: #e8722a;
+  --border: #2c2c2e;
+  --input-bg: #1c1c1e;
+  --input-field: #2c2c2e;
+}
+html, body {
+  height: 100%; background: var(--bg); color: var(--text);
+  font-family: -apple-system, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+  overflow: hidden;
+}
+.app {
+  display: flex; flex-direction: column; height: 100vh;
+  max-width: 480px; margin: 0 auto; background: var(--bg);
+}
+.header {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 16px 10px;
+  background: var(--header-bg);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.back { font-size: 28px; color: #007aff; cursor: pointer; line-height: 1; margin-right: 2px; }
+.h-avatar {
+  width: 42px; height: 42px; border-radius: 50%; flex-shrink: 0;
+  background: #5b5ea6; display: flex; align-items: center;
+  justify-content: center; font-size: 15px; font-weight: 700;
+}
+.h-info { flex: 1; min-width: 0; }
+.h-name { font-size: 17px; font-weight: 600; }
+.h-sub { font-size: 12px; color: var(--text-dim); margin-top: 1px; }
+.h-icons { display: flex; gap: 22px; align-items: center; flex-shrink: 0; }
+.h-icons svg { width: 22px; height: 22px; fill: #007aff; cursor: pointer; }
+.messages { flex: 1; overflow-y: auto; padding: 4px 0 8px; }
+.messages::-webkit-scrollbar { display: none; }
+.ts-divider {
+  text-align: center; font-size: 12.5px; color: var(--text-dim);
+  padding: 18px 16px 6px;
+}
+.sys-msg {
+  text-align: center; font-size: 12px; color: var(--text-dim);
+  padding: 4px 32px 6px; line-height: 1.4;
+}
+.msg-row {
+  display: flex; align-items: flex-end; gap: 8px;
+  padding: 2px 12px; position: relative;
+}
+.msg-row.mine { flex-direction: row-reverse; padding-left: 56px; }
+.msg-row.other { padding-right: 56px; }
+.msg-row.no-av .av { visibility: hidden; }
+.av {
+  width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700; color: #fff;
+  align-self: flex-end; position: relative;
+}
+.av .dot {
+  position: absolute; bottom: 0; right: 0;
+  width: 11px; height: 11px; background: #636366;
+  border-radius: 50%; border: 2px solid var(--bg);
+}
+.msg-row.mine .av { display: none; }
+.bwrap { display: flex; flex-direction: column; max-width: 78%; }
+.msg-row.mine .bwrap { align-items: flex-end; }
+.msg-row.other .bwrap { align-items: flex-start; }
+.sender { font-size: 12.5px; color: var(--text-dim); margin-bottom: 3px; padding-left: 2px; }
+.bubble {
+  background: var(--bubble-other); color: var(--text);
+  border-radius: 18px; padding: 12px 14px;
+  font-size: 17px; line-height: 1.42;
+  border-left: 3px solid var(--bubble-other-border);
+  word-break: break-word; white-space: pre-wrap;
+  cursor: pointer; transition: opacity 0.1s;
+}
+.msg-row.mine .bubble { background: var(--bubble-mine); border-left: none; }
+.bubble:active { opacity: 0.8; }
+.bubble.open { outline: 2px solid #5b5ea6; outline-offset: 2px; }
+.bubble .at { color: var(--mention); font-weight: 500; }
+.editor { display: none; flex-direction: column; gap: 6px; margin-top: 6px; }
+.editor.on { display: flex; }
+.ef { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-dim); }
+.ef label { width: 44px; text-align: right; flex-shrink: 0; }
+.ef input {
+  flex: 1; background: var(--input-field); border: 1px solid #3a3a3c;
+  border-radius: 8px; padding: 5px 10px; font-size: 13px;
+  font-family: inherit; color: #fff; outline: none;
+}
+.ef input:focus { border-color: #5b5ea6; }
+.etarea {
+  width: 100%; background: var(--input-field); border: 1px solid #3a3a3c;
+  border-radius: 10px; padding: 10px 12px; font-size: 15px;
+  font-family: inherit; color: #fff; resize: none;
+  min-height: 72px; line-height: 1.4; outline: none;
+}
+.etarea:focus { border-color: #5b5ea6; }
+.ebtns { display: flex; gap: 8px; justify-content: flex-end; }
+.ebtns button {
+  padding: 6px 16px; border-radius: 14px; border: none;
+  font-size: 13px; font-weight: 600; cursor: pointer; color: #fff;
+}
+.bdel { background: #ff3b30; }
+.bcnl { background: #3a3a3c; }
+.bsav { background: #5b5ea6; }
+.input-bar {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 12px 12px;
+  background: var(--input-bg); border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.add-btn {
+  width: 36px; height: 36px; border-radius: 50%; background: #5b5ea6;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px; color: #fff; cursor: pointer; flex-shrink: 0;
+  font-weight: 300; line-height: 1; position: relative;
+}
+.add-btn .ndot {
+  position: absolute; top: -1px; right: -1px;
+  width: 9px; height: 9px; background: #ff3b30;
+  border-radius: 50%; border: 2px solid var(--input-bg);
+}
+.ifield {
+  flex: 1; background: var(--input-field); border-radius: 22px;
+  padding: 9px 14px; display: flex; align-items: center;
+  border: 1px solid #3a3a3c;
+}
+.ifield input {
+  flex: 1; background: transparent; border: none; color: #fff;
+  font-size: 16px; font-family: inherit; outline: none;
+}
+.ifield input::placeholder { color: #636366; }
+.i-icons { display: flex; gap: 14px; margin-left: 10px; }
+.i-icons svg { width: 22px; height: 22px; fill: #8e8e93; cursor: pointer; }
+.chooser {
+  display: none; position: fixed;
+  left: 50%; bottom: 72px; transform: translateX(-50%);
+  width: calc(100% - 24px); max-width: 460px;
+  background: #2c2c2e; border-radius: 16px;
+  overflow: hidden; z-index: 99;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.85);
+}
+.chooser.on { display: block; }
+.ch-opt {
+  display: flex; align-items: center; gap: 12px;
+  padding: 15px 20px; font-size: 16px; cursor: pointer;
+  border-bottom: 1px solid #3a3a3c; color: #fff;
+}
+.ch-opt:last-child { border-bottom: none; }
+.ch-opt:hover, .ch-opt:active { background: #3a3a3c; }
+.ch-av {
+  width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; color: #fff;
+}
 </style>
 </head>
 <body>
-
-<div class="phone">
-  <!-- Status bar -->
-  <div class="status-bar">
-    <span class="time">9:41</span>
-    <div class="icons">
-      <svg width="17" height="12" viewBox="0 0 17 12"><rect x="0" y="3" width="3" height="9" rx="1"/><rect x="4.5" y="2" width="3" height="10" rx="1"/><rect x="9" y="0" width="3" height="12" rx="1"/><rect x="13.5" y="0" width="3" height="12" rx="1" opacity=".35"/></svg>
-      <svg width="16" height="12" viewBox="0 0 16 12"><path d="M8 3.5C9.8 3.5 11.4 4.2 12.6 5.3L14 3.9C12.4 2.4 10.3 1.5 8 1.5S3.6 2.4 2 3.9L3.4 5.3C4.6 4.2 6.2 3.5 8 3.5zm0 3C9 6.5 9.9 6.9 10.6 7.5L12 6.1C10.9 5.2 9.5 4.5 8 4.5S5.1 5.2 4 6.1L5.4 7.5C6.1 6.9 7 6.5 8 6.5zm0 3c.6 0 1.1.2 1.5.6L8 10.5l-1.5-2.4C6.9 9.8 7.4 10 8 10z" opacity=".35"/></svg>
-      <svg width="25" height="12" viewBox="0 0 25 12"><rect x="0" y="1" width="22" height="10" rx="2" stroke="#fff" stroke-width="1" fill="none"/><rect x="1.5" y="2.5" width="16" height="7" rx="1" fill="#fff"/><rect x="23" y="4" width="2" height="4" rx="1" fill="#fff" opacity=".4"/></svg>
-    </div>
-  </div>
-
-  <!-- Header -->
+<div class="app">
   <div class="header">
-    <span class="back-btn">&#8249;</span>
-    <div class="avatar-stack">
-      <div class="av" style="background:#6264A7">MP</div>
-      <div class="av" style="background:#C43BAD">EB</div>
-      <div class="av" style="background:#E97548">AT</div>
+    <span class="back">&#8592;</span>
+    <div class="h-avatar">EM</div>
+    <div class="h-info">
+      <div class="h-name" id="chatName">Emily and Michael</div>
+      <div class="h-sub" id="chatSub">3 participants</div>
     </div>
-    <div class="chat-info">
-      <div class="chat-name">Michael, Emily + 5</div>
-      <div class="chat-members">8 members</div>
-    </div>
-    <div class="header-actions">
-      <span class="icon">&#9679;&#9679;&#9679;</span>
+    <div class="h-icons">
+      <svg viewBox="0 0 24 24"><path d="M15 8v8H5V8h10zm1-2H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3.5l4 3v-9l-4 3V7a1 1 0 0 0-1-1z"/></svg>
+      <svg viewBox="0 0 24 24"><path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1-9.4 0-17-7.6-17-17 0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1L6.6 10.8z"/></svg>
+      <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
     </div>
   </div>
 
-  <!-- Edit mode banner -->
-  <div class="edit-banner hidden" id="editBanner">
-    ✏️ Tap any message to edit it &nbsp;·&nbsp; Long-press to delete
-    <button onclick="toggleEditMode()">Done</button>
-  </div>
+  <div class="messages" id="msgs"></div>
 
-  <!-- Messages -->
-  <div class="messages" id="messages"></div>
-
-  <!-- New message sender chooser -->
-  <div class="new-msg-who" id="whoChooser">
-    <div class="who-option" onclick="addMessage('other')">
-      <div class="av-sm" style="background:#6264A7">MP</div>
-      <span>As <b>Michael Phillimore</b></span>
+  <div class="chooser" id="chooser">
+    <div class="ch-opt" onclick="addMsg('other')">
+      <div class="ch-av" style="background:#5b5ea6">MP</div>
+      <span>Send as <b>Michael Phillimore</b></span>
     </div>
-    <div class="who-option" onclick="addMessage('mine')">
-      <div class="av-sm" style="background:#E97548">AT</div>
-      <span>As <b>Ali Taha (student)</b></span>
+    <div class="ch-opt" onclick="addMsg('mine')">
+      <div class="ch-av" style="background:#e8722a">AT</div>
+      <span>Send as <b>Ali Taha (student)</b></span>
     </div>
   </div>
 
-  <!-- Input bar -->
   <div class="input-bar">
-    <div class="input-wrap">
-      <input type="text" id="newMsgInput" placeholder="Type a message…" onkeydown="handleKey(event)">
+    <div class="add-btn"><span>+</span><div class="ndot"></div></div>
+    <div class="ifield">
+      <input type="text" id="msgIn" placeholder="Type a message" onkeydown="onKey(event)">
+      <div class="i-icons">
+        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M12 15.2A3.2 3.2 0 1 1 12 8.8a3.2 3.2 0 0 1 0 6.4zm0-8.4A5.2 5.2 0 1 0 12 17.2 5.2 5.2 0 0 0 12 6.8zM9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9z"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm-1-9c0-.55.45-1 1-1s1 .45 1 1v6c0 .55-.45 1-1 1s-1-.45-1-1V5zm6 6c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
+      </div>
     </div>
-    <button class="send-btn" onclick="showWhoChooser()">
-      <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
-    </button>
   </div>
-
-  <!-- Home indicator -->
-  <div class="home-indicator"></div>
 </div>
 
 <script>
-// ─── Message data ───────────────────────────────────────────────────────────
-const MESSAGES = [
-  { id: 1, type: 'system', text: 'Michael Phillimore added Emily Bousfield and 5 others to the chat.' },
-  { id: 2, type: 'date', text: 'Sunday, 21 June 2026' },
-  { id: 3, type: 'other', sender: 'Michael Phillimore', time: '10:44', text: 'Good Morning All, in case you were not aware - you have units (nearly universally Robots) to complete before you finish your access course.\n\nLessons will go ahead as normal tomorrow. I greatly suggest keeping things simple and then we should be able to have you all finished...well...tomorrow, but if not tomorrow by Tues. But the forecast for Tuesday is a firey inferno. I am afraid the shorts will be out. And if that doesn\'t scare you to do the work, Im not sure what will 😄 😉\n\nEnjoy your sunday!' },
-  { id: 4, type: 'date', text: 'Monday, 22 June 2026' },
-  { id: 5, type: 'other', sender: 'Michael Phillimore', time: '09:02', text: 'So I have Cylle.... where are the rest of you guys?' },
-  { id: 6, type: 'other', sender: 'Michael Phillimore', time: '09:12', text: 'Ali Taha (student), Fahmi Hussein (student), Daania Rizwan (student), Teisha Race-Kerr (student) - where are you?' },
-  { id: 7, type: 'mine', sender: 'Ali Taha (student)', time: '09:15', text: "Sorry sir I'll be there soon, my car had some issues" },
-  { id: 8, type: 'other', sender: 'Michael Phillimore', time: '09:30', text: 'We are in 113 until mid day.\n\nThis is astonishing that cyclle is the only one here, and other then Alis message, no comms from you. What is going on folks???' },
-  { id: 9, type: 'other', sender: 'Michael Phillimore', time: '12:53', text: 'we are now back in 106 🙂' },
-  { id: 10, type: 'date', text: 'Tuesday, 23 June 2026' },
-  { id: 11, type: 'system', text: 'Michael Phillimore removed Cylle Saringan (student) from the chat.' },
-  { id: 12, type: 'system', text: 'Michael Phillimore removed Fahmi Hussein (student) from the chat.' },
-  { id: 13, type: 'system', text: 'Michael Phillimore removed Teisha Race-Kerr (student) from the chat.' },
-  { id: 14, type: 'other', sender: 'Michael Phillimore', time: '08:41', text: "You two are now the only ones who have not passed. Daania Rizwan (student) you didn't even communicate with us yesterday, which is frankly just astonishing at this point of the year and given you have ONE unit left. Ali Taha (student) you were working but nothing has been handed in! We need to be seeing that tracking sheet go green....." },
-  { id: 15, type: 'other', sender: 'Michael Phillimore', time: '09:11', text: '9:10 and neither of you two are here. We could just fail both of you now and be done with it??' },
-  { id: 16, type: 'other', sender: 'Michael Phillimore', time: '09:12', text: 'we have an Ali!' },
-  { id: 17, type: 'date', text: 'Wednesday, 24 June 2026' },
-  { id: 18, type: 'system', text: 'Michael Phillimore removed Daania Rizwan (student) from the chat.' },
-  { id: 19, type: 'other', sender: 'Michael Phillimore', time: '09:20', text: 'Ali Taha (student) what progress have you made/work have you handed in please? You said you were close to a couple of things yesterday, are these now done?' },
-  { id: 20, type: 'date', text: 'Thursday, 25 June 2026' },
-  { id: 21, type: 'other', sender: 'Michael Phillimore', time: '08:23', text: "Ali Taha (student) - A DAY later with no reply, what is your status?? At this point you have 8 units to complete and 2 days left on site to do them - we need to see progress NOW. You can do it but you appear to be choosing not to do it. You basically have to be working on this full time every day between now and next Tuesday to be getting through.\n\nI will be honest if we don't see major progress today I am going to have to discuss your future on the course with Jon." },
-  { id: 22, type: 'other', sender: 'Michael Phillimore', time: '15:31', text: "Right Ali Taha (student) in lieu of complete lack of contact and work, I want you on site tomorrow at 9 - you will be in with my other Level 3s in IOT106.\n\nYou will also have a 5-day timetable next week where every day you are in at 9 in the morning until close of play.\n\nIf we cant see work being produced off site then you have left us little option." },
-  { id: 23, type: 'date', text: 'Sunday, 28 June 2026' },
-  { id: 24, type: 'other', sender: 'Michael Phillimore', time: '16:40', text: "Ali Taha (student) this is to confirm you've now passed the course. Well done.\n\nBut I greatly encourage you to find solutions so that you don't have this backlog in future, as there will come a point you won't be able to get it finished in time.\n\nEnjoy your summer!" },
-  { id: 25, type: 'mine', sender: 'Ali Taha (student)', time: '16:41', text: 'Thank you sir. Will do 👍' }
+const DATA = [
+  { id:1, type:'sys', text:'Michael Phillimore added Emily Bousfield and 5 others to the chat.' },
+  { id:2, type:'ts', text:'Sunday 10:44' },
+  { id:3, type:'other', sender:'Michael Phillimore', time:'10:44',
+    rich:'Good Morning All, in case you were not aware - you have units (nearly universally Robots) to complete before you finish your access course.\n\nLessons will go ahead as normal tomorrow. I greatly suggest keeping things simple and then we should be able to have you all finished...well...tomorrow, but if not tomorrow by Tues. But the forecast for Tuesday is a firey inferno. I am afraid the shorts will be out. And if that doesn\'t scare you to do the work, Im not sure what will 😄 😉\n\nEnjoy your sunday!' },
+  { id:4, type:'ts', text:'Monday 09:02' },
+  { id:5, type:'other', sender:'Michael Phillimore', time:'09:02', rich:'So I have Cylle.... where are the rest of you guys?' },
+  { id:6, type:'other', sender:'Michael Phillimore', time:'09:12',
+    rich:'<span class="at">Ali Taha (student)</span>, <span class="at">Fahmi Hussein (student)</span>, <span class="at">Daania Rizwan (student)</span>, <span class="at">Teisha Race-Kerr (student)</span> - where are you?' },
+  { id:7, type:'mine', sender:'Ali Taha (student)', time:'09:15', rich:"Sorry sir I'll be there soon, my car had some issues" },
+  { id:8, type:'other', sender:'Michael Phillimore', time:'09:30', rich:'We are in 113 until mid day.\n\nThis is astonishing that cyclle is the only one here, and other then Alis message, no comms from you. What is going on folks???' },
+  { id:9, type:'other', sender:'Michael Phillimore', time:'12:53', rich:'we are now back in 106 🙂' },
+  { id:10, type:'ts', text:'Tuesday 08:41' },
+  { id:11, type:'sys', text:'Michael Phillimore removed Cylle Saringan (student) from the chat.' },
+  { id:12, type:'sys', text:'Michael Phillimore removed Fahmi Hussein (student) from the chat.' },
+  { id:13, type:'sys', text:'Michael Phillimore removed Teisha Race-Kerr (student) from the chat.' },
+  { id:14, type:'other', sender:'Michael Phillimore', time:'08:41',
+    rich:'You two are now the only ones who have not passed. <span class="at">Daania Rizwan (student)</span> you didn\'t even communicate with us yesterday, which is frankly just astonishing at this point of the year and given you have ONE unit left. <span class="at">Ali Taha (student)</span> you were working but nothing has been handed in! We need to be seeing that tracking sheet go green.....' },
+  { id:15, type:'other', sender:'Michael Phillimore', time:'09:11', rich:'9:10 and neither of you two are here. We could just fail both of you now and be done with it??' },
+  { id:16, type:'other', sender:'Michael Phillimore', time:'09:12', rich:'we have an Ali!' },
+  { id:17, type:'ts', text:'Wednesday 09:20' },
+  { id:18, type:'sys', text:'Michael Phillimore removed Daania Rizwan (student) from the chat.' },
+  { id:19, type:'other', sender:'Michael Phillimore', time:'09:20',
+    rich:'<span class="at">Ali Taha (student)</span> what progress have you made/work have you handed in please? You said you were close to a couple of things yesterday, are these now done?' },
+  { id:20, type:'ts', text:'Thursday 08:23' },
+  { id:21, type:'other', sender:'Michael Phillimore', time:'08:23',
+    rich:'<span class="at">Ali Taha (student)</span> - A DAY later with no reply, what is your status?? At this point you have 8 units to complete and 2 days left on site to do them - we need to see progress NOW. You can do it but you appear to be choosing not to do it. You basically have to be working on this full time every day between now and next Tuesday to be getting through.\n\nI will be honest if we don\'t see major progress today I am going to have to discuss your future on the course with Jon.' },
+  { id:22, type:'ts', text:'Thursday 15:31' },
+  { id:23, type:'other', sender:'Michael Phillimore', time:'15:31',
+    rich:'Right <span class="at">Ali Taha (student)</span> in lieu of complete lack of contact and work, I want you on site tomorrow at 9 - you will be in with my other Level 3s in IOT106.\n\nYou will also have a 5-day timetable next week where every day you are in at 9 in the morning until close of play.\n\nIf we cant see work being produced off site then you have left us little option.' },
+  { id:24, type:'ts', text:'Yesterday 16:40' },
+  { id:25, type:'other', sender:'Michael Phillimore', time:'16:40',
+    rich:'<span class="at">Ali Taha (student)</span> this is too confirm you\'ve now passed the course. Well done.\n\nBut I greatly encourage you to find solutions so that you don\'t have this backlog in future, as there will come a point you won\'t be able to get it finished in time.\n\nEnjoy your summer!' },
+  { id:26, type:'mine', sender:'Ali Taha (student)', time:'16:41', rich:'Thank you sir. Will do 👍' }
 ];
 
-let nextId = 100;
-let editMode = false;
-let currentEdit = null;
+let uid=200, curEdit=null;
+const AV={'Michael Phillimore':{bg:'#5b5ea6',i:'MP'},'Ali Taha (student)':{bg:'#e8722a',i:'AT'}};
+function av(n){return AV[n]||{bg:'#636366',i:n.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase()};}
 
-// ─── Avatar colours ──────────────────────────────────────────────────────────
-const AVATAR_COLORS = {
-  'Michael Phillimore': '#6264A7',
-  'Ali Taha (student)': '#E97548',
-  'Emily Bousfield': '#C43BAD',
-};
-function avatarColor(name) {
-  if (AVATAR_COLORS[name]) return AVATAR_COLORS[name];
-  let h = 0; for (let c of name) h = (h * 31 + c.charCodeAt(0)) & 0xffffff;
-  return '#' + (h & 0xFFFFFF).toString(16).padStart(6, '0');
-}
-function initials(name) {
-  return name.split(' ').filter(Boolean).slice(0, 2).map(w => w[0]).join('').toUpperCase();
-}
-
-// ─── Render ─────────────────────────────────────────────────────────────────
-function render() {
-  const container = document.getElementById('messages');
-  container.innerHTML = '';
-
-  let prevSender = null;
-  let prevType = null;
-
-  MESSAGES.forEach((msg, i) => {
-    const next = MESSAGES[i + 1];
-
-    if (msg.type === 'date') {
-      const d = document.createElement('div');
-      d.className = 'date-divider';
-      d.innerHTML = `<span contenteditable="${editMode}" data-id="${msg.id}" data-field="text" onblur="saveField(this)">${msg.text}</span>`;
-      container.appendChild(d);
-      prevSender = null; prevType = null;
-      return;
+function render(){
+  const c=document.getElementById('msgs'); c.innerHTML='';
+  let ps=null,pt=null;
+  DATA.forEach(m=>{
+    if(m.type==='ts'){
+      const d=document.createElement('div'); d.className='ts-divider';
+      d.innerHTML=`<span contenteditable="true" data-id="${m.id}" data-f="text" onblur="sf(this)">${esc(m.text)}</span>`;
+      c.appendChild(d); ps=null; pt=null; return;
     }
-
-    if (msg.type === 'system') {
-      const s = document.createElement('div');
-      s.className = 'system-msg';
-      s.innerHTML = editMode
-        ? `<span contenteditable="true" data-id="${msg.id}" data-field="text" onblur="saveField(this)" style="outline:1px dashed #ccc;border-radius:4px;padding:1px 4px">${msg.text}</span>`
-        : msg.text;
-      container.appendChild(s);
-      prevSender = null; prevType = null;
-      return;
+    if(m.type==='sys'){
+      const s=document.createElement('div'); s.className='sys-msg';
+      s.innerHTML=`<span contenteditable="true" data-id="${m.id}" data-f="text" onblur="sf(this)">${esc(m.text||'')}</span>`;
+      c.appendChild(s); ps=null; pt=null; return;
     }
-
-    // Chat message
-    const sameSender = msg.sender === prevSender && prevType === msg.type;
-    const row = document.createElement('div');
-    row.className = `msg-row ${msg.type}` + (sameSender ? ' no-avatar' : '');
-    row.dataset.id = msg.id;
-
-    const avatarHTML = msg.type !== 'mine'
-      ? `<div class="msg-avatar" style="background:${avatarColor(msg.sender)}">${initials(msg.sender)}</div>`
-      : '';
-
-    const senderHTML = (!sameSender && msg.type !== 'mine')
-      ? `<div class="sender-name">${msg.sender}</div>` : '';
-
-    row.innerHTML = `
-      ${avatarHTML}
-      <div class="bubble-wrap">
-        ${senderHTML}
-        <div class="bubble" onclick="onBubbleClick(${msg.id}, this)" title="Tap to edit">
-          <div class="bubble-text">${escHtml(msg.text)}</div>
-          <span class="edit-hint">tap to edit</span>
-        </div>
-        <div class="inline-editor" id="editor-${msg.id}">
-          <div class="editor-fields">
-            <div class="editor-field">
-              <label>From</label>
-              <input type="text" id="ef-sender-${msg.id}" value="${msg.sender}" placeholder="Sender name">
-            </div>
-            <div class="editor-field">
-              <label>Time</label>
-              <input type="text" id="ef-time-${msg.id}" value="${msg.time}" placeholder="e.g. 09:15">
-            </div>
-          </div>
-          <textarea class="editor-textarea" id="ef-text-${msg.id}" rows="3">${msg.text}</textarea>
-          <div class="editor-btns">
-            <button class="btn-delete" onclick="deleteMsg(${msg.id})">Delete</button>
-            <button class="btn-cancel" onclick="cancelEdit(${msg.id})">Cancel</button>
-            <button class="btn-save" onclick="saveEdit(${msg.id})">Save</button>
+    const same=m.sender===ps&&m.type===pt;
+    const row=document.createElement('div');
+    row.className=`msg-row ${m.type}${same?' no-av':''}`;
+    row.dataset.id=m.id;
+    const a=av(m.sender);
+    const avH=m.type!=='mine'?`<div class="av" style="background:${a.bg}">${a.i}<div class="dot"></div></div>`:'';
+    const snH=!same&&m.type!=='mine'?`<div class="sender">${esc(m.sender)}</div>`:'';
+    const content=(m.rich||esc(m.text||'')).replace(/\n/g,'<br>');
+    const editText=(m.text||m.rich||'').replace(/<[^>]+>/g,'');
+    row.innerHTML=`${avH}
+      <div class="bwrap">${snH}
+        <div class="bubble" id="b${m.id}" onclick="openEdit(${m.id},this)"><div>${content}</div></div>
+        <div class="editor" id="e${m.id}">
+          <div class="ef"><label>From</label><input id="es${m.id}" value="${esc(m.sender)}"></div>
+          <div class="ef"><label>Time</label><input id="et${m.id}" value="${esc(m.time||'')}"></div>
+          <textarea class="etarea" id="ex${m.id}">${editText}</textarea>
+          <div class="ebtns">
+            <button class="bdel" onclick="del(${m.id})">Delete</button>
+            <button class="bcnl" onclick="closeEdit(${m.id})">Cancel</button>
+            <button class="bsav" onclick="save(${m.id})">Save</button>
           </div>
         </div>
-        <div class="msg-time">${msg.time}</div>
-      </div>
-    `;
-
-    container.appendChild(row);
-    prevSender = msg.sender;
-    prevType = msg.type;
+      </div>`;
+    c.appendChild(row); ps=m.sender; pt=m.type;
   });
-
-  // Scroll to bottom on first load
-  container.scrollTop = container.scrollHeight;
+  c.scrollTop=c.scrollHeight;
 }
 
-function escHtml(t) {
-  return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
-}
+function esc(t=''){return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 
-// ─── Edit logic ──────────────────────────────────────────────────────────────
-function onBubbleClick(id, bubbleEl) {
-  if (currentEdit === id) return;
-  if (currentEdit !== null) cancelEdit(currentEdit);
-
-  currentEdit = id;
-  bubbleEl.classList.add('editing');
-
-  const editor = document.getElementById('editor-' + id);
-  editor.classList.add('active');
-
-  // Auto-grow textarea
-  const ta = document.getElementById('ef-text-' + id);
-  ta.style.height = 'auto';
-  ta.style.height = ta.scrollHeight + 'px';
-  ta.addEventListener('input', () => { ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + 'px'; });
+function openEdit(id,bEl){
+  if(curEdit===id)return;
+  if(curEdit!==null)closeEdit(curEdit);
+  curEdit=id; bEl.classList.add('open');
+  const ed=document.getElementById('e'+id); ed.classList.add('on');
+  const ta=document.getElementById('ex'+id);
+  ta.style.height='auto'; ta.style.height=ta.scrollHeight+'px';
+  ta.addEventListener('input',()=>{ta.style.height='auto';ta.style.height=ta.scrollHeight+'px';});
   ta.focus();
 }
-
-function saveEdit(id) {
-  const msg = MESSAGES.find(m => m.id === id);
-  if (!msg) return;
-  msg.sender = document.getElementById('ef-sender-' + id).value.trim() || msg.sender;
-  msg.time = document.getElementById('ef-time-' + id).value.trim() || msg.time;
-  msg.text = document.getElementById('ef-text-' + id).value;
-  currentEdit = null;
+function closeEdit(id){
+  const b=document.getElementById('b'+id); if(b)b.classList.remove('open');
+  const e=document.getElementById('e'+id); if(e)e.classList.remove('on');
+  curEdit=null;
+}
+function save(id){
+  const m=DATA.find(x=>x.id==id); if(!m)return;
+  m.sender=document.getElementById('es'+id).value.trim()||m.sender;
+  m.time=document.getElementById('et'+id).value.trim()||m.time;
+  m.text=document.getElementById('ex'+id).value;
+  m.rich=null; curEdit=null; render();
+}
+function del(id){
+  if(!confirm('Delete this message?'))return;
+  const i=DATA.findIndex(x=>x.id==id); if(i>=0)DATA.splice(i,1);
+  curEdit=null; render();
+}
+function sf(el){
+  const m=DATA.find(x=>x.id==parseFloat(el.dataset.id));
+  if(m)m[el.dataset.f]=el.innerText.trim();
+}
+function onKey(e){
+  if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();toggleC();}
+  if(e.key==='Escape')document.getElementById('chooser').classList.remove('on');
+}
+function toggleC(){
+  const v=document.getElementById('msgIn').value.trim();
+  if(!v){document.getElementById('msgIn').focus();return;}
+  document.getElementById('chooser').classList.toggle('on');
+}
+function addMsg(type){
+  const v=document.getElementById('msgIn').value.trim(); if(!v)return;
+  document.getElementById('chooser').classList.remove('on');
+  const now=new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+  DATA.push({id:uid++,type,sender:type==='mine'?'Ali Taha (student)':'Michael Phillimore',time:now,rich:v});
+  document.getElementById('msgIn').value='';
   render();
 }
-
-function cancelEdit(id) {
-  const editor = document.getElementById('editor-' + id);
-  if (editor) editor.classList.remove('active');
-  const row = document.querySelector(`.msg-row[data-id="${id}"]`);
-  if (row) { const b = row.querySelector('.bubble'); if (b) b.classList.remove('editing'); }
-  currentEdit = null;
-}
-
-function deleteMsg(id) {
-  if (!confirm('Delete this message?')) return;
-  const i = MESSAGES.findIndex(m => m.id === id);
-  if (i >= 0) MESSAGES.splice(i, 1);
-  currentEdit = null;
-  render();
-}
-
-function saveField(el) {
-  const id = parseInt(el.dataset.id);
-  const field = el.dataset.field;
-  const msg = MESSAGES.find(m => m.id === id);
-  if (msg) msg[field] = el.innerText.trim();
-}
-
-// ─── Add new message ─────────────────────────────────────────────────────────
-function showWhoChooser() {
-  const text = document.getElementById('newMsgInput').value.trim();
-  if (!text) { document.getElementById('newMsgInput').focus(); return; }
-  const chooser = document.getElementById('whoChooser');
-  chooser.classList.toggle('active');
-}
-
-function addMessage(type) {
-  const text = document.getElementById('newMsgInput').value.trim();
-  if (!text) return;
-  document.getElementById('whoChooser').classList.remove('active');
-
-  MESSAGES.push({
-    id: nextId++,
-    type,
-    sender: type === 'mine' ? 'Ali Taha (student)' : 'Michael Phillimore',
-    time: new Date().toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'}),
-    text
-  });
-
-  document.getElementById('newMsgInput').value = '';
-  render();
-  const c = document.getElementById('messages');
-  c.scrollTop = c.scrollHeight;
-}
-
-function handleKey(e) {
-  if (e.key === 'Enter' && !e.shiftKey) {
-    e.preventDefault();
-    showWhoChooser();
-  }
-  if (e.key === 'Escape') {
-    document.getElementById('whoChooser').classList.remove('active');
-  }
-}
-
-function toggleEditMode() {
-  editMode = !editMode;
-  const banner = document.getElementById('editBanner');
-  banner.classList.toggle('hidden', !editMode);
-  if (currentEdit) cancelEdit(currentEdit);
-  render();
-}
-
-// Close chooser on outside click
-document.addEventListener('click', (e) => {
-  const chooser = document.getElementById('whoChooser');
-  if (!chooser.contains(e.target) && !e.target.closest('.send-btn')) {
-    chooser.classList.remove('active');
-  }
+document.querySelector('.add-btn').addEventListener('click',toggleC);
+document.addEventListener('click',e=>{
+  const ch=document.getElementById('chooser');
+  if(!ch.contains(e.target)&&!e.target.closest('.ifield')&&!e.target.closest('.add-btn'))ch.classList.remove('on');
 });
-
-// ─── Init ─────────────────────────────────────────────────────────────────────
 render();
 </script>
 </body>

